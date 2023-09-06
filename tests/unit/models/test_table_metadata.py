@@ -187,12 +187,9 @@ class TestTableMetadata(unittest.TestCase):
 
     def test_serialize_mysql(self) -> None:
         actual = []
-        record = self.table_metadata.next_record()
-        while record:
+        while record := self.table_metadata.next_record():
             serialized_record = mysql_serializer.serialize_record(record)
             actual.append(serialized_record)
-            record = self.table_metadata.next_record()
-
         self.assertEqual(EXPECTED_RECORDS_MYSQL, actual)
 
     def test_table_attributes(self) -> None:
@@ -346,19 +343,12 @@ class TestTableMetadata(unittest.TestCase):
         self.table_metadata7 = TableMetadata('hive', 'gold', 'test_schema7', 'test_table7', 'test_table7', [
             ColumnMetadata('test_id1', 'description of test_table1', 'bigint', 0)], tags="")
 
-        # Test table tag fields are not populated from empty List
-        node_row = self.table_metadata6.next_node()
-        while node_row:
+        while node_row := self.table_metadata6.next_node():
             node_row_serialized = neo4_serializer.serialize_node(node_row)
             self.assertNotEqual(node_row_serialized.get('LABEL'), 'Tag')
-            node_row = self.table_metadata6.next_node()
-
-        # Test table tag fields are not populated from empty str
-        node_row = self.table_metadata7.next_node()
-        while node_row:
+        while node_row := self.table_metadata7.next_node():
             node_row_serialized = neo4_serializer.serialize_node(node_row)
             self.assertNotEqual(node_row_serialized.get('LABEL'), 'Tag')
-            node_row = self.table_metadata7.next_node()
 
 
 if __name__ == '__main__':

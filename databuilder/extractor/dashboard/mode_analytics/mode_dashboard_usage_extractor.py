@@ -50,6 +50,11 @@ class ModeDashboardUsageExtractor(Extractor):
         # and view_count
         json_path = '_embedded.reports[*].[token,view_count]'
         field_names = ['dashboard_id', 'accumulated_view_count']
-        reports_query = ModePaginatedRestApiQuery(query_to_join=spaces_query, url=reports_url_template, params=params,
-                                                  json_path=json_path, field_names=field_names, skip_no_result=True)
-        return reports_query
+        return ModePaginatedRestApiQuery(
+            query_to_join=spaces_query,
+            url=reports_url_template,
+            params=params,
+            json_path=json_path,
+            field_names=field_names,
+            skip_no_result=True,
+        )

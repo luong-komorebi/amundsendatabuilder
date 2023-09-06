@@ -21,7 +21,7 @@ def create_remove_stale_data_job():
     aws_zone = os.getenv("AWS_ZONE")
     neptune_host = os.getenv('CREDENTIALS_NEPTUNE_HOST', 'localhost')
     neptune_port = os.getenv('CREDENTIALS_NEPTUNE_PORT', 7687)
-    neptune_host = '{}:{}'.format(neptune_host, neptune_port)
+    neptune_host = f'{neptune_host}:{neptune_port}'
     target_relations = ['DESCRIPTION', 'DESCRIPTION_OF', 'COLUMN', 'COLUMN_OF', 'TABLE', 'TABLE_OF']
     target_nodes = ['Table', 'Column', 'Programmatic_Description', "Schema"]
     job_config = ConfigFactory.from_dict({
@@ -37,11 +37,7 @@ def create_remove_stale_data_job():
             }
         }
     })
-    job = DefaultJob(
-        conf=job_config,
-        task=NeptuneStalenessRemovalTask()
-    )
-    return job
+    return DefaultJob(conf=job_config, task=NeptuneStalenessRemovalTask())
 
 
 if __name__ == '__main__':

@@ -108,11 +108,19 @@ class TestFileSystemCSVLoader(unittest.TestCase):
                       'column_name', 'column_type', 'column_comment',
                       'owner'])
         ]
-        expected = expected + [
-            ','.join(['test_database', 'test_schema', 'test_table',
-                      'test_description', 'test_column_name',
-                      'test_column_type', 'test_column_comment', 'test_owner']
-                     )
+        expected += [
+            ','.join(
+                [
+                    'test_database',
+                    'test_schema',
+                    'test_table',
+                    'test_description',
+                    'test_column_name',
+                    'test_column_type',
+                    'test_column_comment',
+                    'test_owner',
+                ]
+            )
         ] * 5
 
         self._check_results_helper(expected=expected)

@@ -46,10 +46,7 @@ class BamboohrUserExtractor(Extractor):
 
             def get_field(name: str) -> str:
                 field = user.find(f"./field[@id='{name}']")
-                if field is not None and field.text is not None:
-                    return field.text
-                else:
-                    return ''
+                return field.text if field is not None and field.text is not None else ''
 
             yield User(
                 email=get_field('workEmail'),

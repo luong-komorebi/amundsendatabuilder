@@ -134,7 +134,7 @@ def create_snowflake_es_publisher_job():
     # elastic search client instance
     elasticsearch_client = es
     # unique name of new index in Elasticsearch
-    elasticsearch_new_index_key = 'tables' + str(uuid.uuid4())
+    elasticsearch_new_index_key = f'tables{str(uuid.uuid4())}'
     # related to mapping type from /databuilder/publisher/elasticsearch_publisher.py#L38
     elasticsearch_new_index_key_type = 'table'
     # alias for Elasticsearch used in amundsensearchlibrary/search_service/config.py as an index

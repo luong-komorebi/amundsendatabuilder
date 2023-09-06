@@ -17,7 +17,7 @@ class TestRestApiQuery(unittest.TestCase):
             {'john': 'doe'}
         ])
 
-        result = [v for v in rest_api_query.execute()]
+        result = list(rest_api_query.execute())
         expected = [
             {'foo': 'bar'},
             {'john': 'doe'}
@@ -28,7 +28,7 @@ class TestRestApiQuery(unittest.TestCase):
     def test_empty_rest_api_query_seed(self) -> None:
         rest_api_query = EmptyRestApiQuerySeed()
 
-        result = [v for v in rest_api_query.execute()]
+        result = list(rest_api_query.execute())
         assert len(result) == 1
 
     def test_rest_api_query(self) -> None:

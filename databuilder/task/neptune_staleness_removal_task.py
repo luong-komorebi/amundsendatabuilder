@@ -143,8 +143,9 @@ class NeptuneStalenessRemovalTask(Task):
 
             threshold = self.staleness_pct_dict.get(type_str, self.staleness_pct)
             if stale_pct >= threshold:
-                raise Exception('Staleness percentage of {} is {} %. Stopping due to over threshold {} %'
-                                .format(type_str, stale_pct, threshold))
+                raise Exception(
+                    f'Staleness percentage of {type_str} is {stale_pct} %. Stopping due to over threshold {threshold} %'
+                )
 
             LOGGER.info(
                 'Will be dropping {stale_count} {record_type} records or {stale_pct}% of {record_type} data'.format(

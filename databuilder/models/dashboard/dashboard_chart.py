@@ -73,12 +73,11 @@ class DashboardChart(GraphSerializable, TableSerializable):
         if self._chart_url:
             node_attributes['url'] = self._chart_url
 
-        node = GraphNode(
+        yield GraphNode(
             key=self._get_chart_node_key(),
             label=DashboardChart.DASHBOARD_CHART_LABEL,
-            attributes=node_attributes
+            attributes=node_attributes,
         )
-        yield node
 
     def create_next_relation(self) -> Union[GraphRelationship, None]:
         try:
@@ -87,22 +86,21 @@ class DashboardChart(GraphSerializable, TableSerializable):
             return None
 
     def _create_relation_iterator(self) -> Iterator[GraphRelationship]:
-        relationship = GraphRelationship(
+        yield GraphRelationship(
             start_label=DashboardQuery.DASHBOARD_QUERY_LABEL,
             start_key=DashboardQuery.DASHBOARD_QUERY_KEY_FORMAT.format(
                 product=self._product,
                 cluster=self._cluster,
                 dashboard_group_id=self._dashboard_group_id,
                 dashboard_id=self._dashboard_id,
-                query_id=self._query_id
+                query_id=self._query_id,
             ),
             end_label=DashboardChart.DASHBOARD_CHART_LABEL,
             end_key=self._get_chart_node_key(),
             type=DashboardChart.CHART_RELATION_TYPE,
             reverse_type=DashboardChart.CHART_REVERSE_RELATION_TYPE,
-            attributes={}
+            attributes={},
         )
-        yield relationship
 
     def _get_chart_node_key(self) -> str:
         return DashboardChart.DASHBOARD_CHART_KEY_FORMAT.format(

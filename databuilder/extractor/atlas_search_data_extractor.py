@@ -150,9 +150,9 @@ class AtlasSearchDataExtractor(Extractor):
 
     @property
     def model_class(self) -> Any:
-        model_class = AtlasSearchDataExtractor.ENTITY_MODEL_BY_TYPE.get(self.entity_type)
-
-        if model_class:
+        if model_class := AtlasSearchDataExtractor.ENTITY_MODEL_BY_TYPE.get(
+            self.entity_type
+        ):
             module_name, class_name = model_class.rsplit(".", 1)
             mod = importlib.import_module(module_name)
 
@@ -201,10 +201,10 @@ class AtlasSearchDataExtractor(Extractor):
             return None
 
     def _get_count_of_active_entities(self) -> int:
-        entity_metrics = self._get_latest_entity_metrics()
-
-        if entity_metrics:
-            count = entity_metrics.get('entityActive-typeAndSubTypes', dict()).get(self.entity_type, 0)
+        if entity_metrics := self._get_latest_entity_metrics():
+            count = entity_metrics.get('entityActive-typeAndSubTypes', {}).get(
+                self.entity_type, 0
+            )
 
             return int(count)
         else:
@@ -227,9 +227,7 @@ class AtlasSearchDataExtractor(Extractor):
             results = self.driver.search_dsl(**full_params)
 
             for hit in results:
-                for entity in hit.entities:
-                    result.append(entity.guid)
-
+                result.extend(entity.guid for entity in hit.entities)
             return result
         except Exception:
             LOGGER.warning(f'Error processing batch: {batch_start}-{batch_end}', exc_info=True)
@@ -291,12 +289,11 @@ class AtlasSearchDataExtractor(Extractor):
                 return_list = pool.map(self._get_entity_details, guids_chunks)
 
             for sub_list in return_list:
-                for entry in sub_list:
-                    yield entry
+                yield from sub_list
 
     def _get_extract_iter(self) -> Iterator[Any]:
         for atlas_entity in self._execute_query():
-            model_dict = dict()
+            model_dict = {}
 
             try:
                 data = atlas_entity.__dict__['_data']
@@ -304,8 +301,14 @@ class AtlasSearchDataExtractor(Extractor):
                 for spec in self.field_mappings:
                     model_field, atlas_field_path, _transform_spec, default_value = spec
 
-                    atlas_value = reduce(lambda x, y: x.get(y, dict()), atlas_field_path.split('.'),
-                                         data) or default_value
+                    atlas_value = (
+                        reduce(
+                            lambda x, y: x.get(y, {}),
+                            atlas_field_path.split('.'),
+                            data,
+                        )
+                        or default_value
+                    )
 
                     transform_spec = _transform_spec or (lambda x: x)
 
@@ -314,4 +317,4 @@ class AtlasSearchDataExtractor(Extractor):
 
                 yield self.model_class(**model_dict)
             except Exception:
-                LOGGER.warning(f'Error building model object.', exc_info=True)
+                LOGGER.warning('Error building model object.', exc_info=True)

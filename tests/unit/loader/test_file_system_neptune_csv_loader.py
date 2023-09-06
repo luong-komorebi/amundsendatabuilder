@@ -27,11 +27,11 @@ class FileSystemNeptuneCSVLoaderTest(unittest.TestCase):
         prefix = '/var/tmp/TestFileSystemNeptuneCSVLoader'
         self._conf = ConfigFactory.from_dict(
             {
-                FSNeptuneCSVLoader.NODE_DIR_PATH: '{}/{}'.format(prefix, 'nodes'),
-                FSNeptuneCSVLoader.RELATION_DIR_PATH: '{}/{}'.format(prefix, 'relationships'),
+                FSNeptuneCSVLoader.NODE_DIR_PATH: f'{prefix}/nodes',
+                FSNeptuneCSVLoader.RELATION_DIR_PATH: f'{prefix}/relationships',
                 FSNeptuneCSVLoader.SHOULD_DELETE_CREATED_DIR: True,
                 FSNeptuneCSVLoader.FORCE_CREATE_DIR: True,
-                FSNeptuneCSVLoader.JOB_PUBLISHER_TAG: 'TESTED'
+                FSNeptuneCSVLoader.JOB_PUBLISHER_TAG: 'TESTED',
             }
         )
 
@@ -50,9 +50,7 @@ class FileSystemNeptuneCSVLoaderTest(unittest.TestCase):
 
         loader.close()
 
-        expected_node_path = '{}/../resources/fs_neptune_csv_loader/nodes'.format(
-            os.path.join(os.path.dirname(__file__))
-        )
+        expected_node_path = f'{os.path.join(os.path.dirname(__file__))}/../resources/fs_neptune_csv_loader/nodes'
         expected_nodes = self._get_csv_rows(
             expected_node_path,
             itemgetter('~id')
@@ -64,9 +62,7 @@ class FileSystemNeptuneCSVLoaderTest(unittest.TestCase):
         self.maxDiff = None
         self.assertEqual(expected_nodes, actual_nodes)
 
-        expected_rel_path = '{}/../resources/fs_neptune_csv_loader/relationships'.format(
-            os.path.join(os.path.dirname(__file__))
-        )
+        expected_rel_path = f'{os.path.join(os.path.dirname(__file__))}/../resources/fs_neptune_csv_loader/relationships'
         expected_relations = self._get_csv_rows(
             expected_rel_path,
             itemgetter('~id')
@@ -84,9 +80,7 @@ class FileSystemNeptuneCSVLoaderTest(unittest.TestCase):
         for f in files:
             with open(f, 'r') as f_input:
                 reader = DictReader(f_input)
-                for row in reader:
-                    result.append(OrderedDict(sorted(row.items())))
-
+                result.extend(OrderedDict(sorted(row.items())) for row in reader)
         return sorted(result, key=sorting_key_getter)
 
 

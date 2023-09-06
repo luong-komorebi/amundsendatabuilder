@@ -31,7 +31,4 @@ class TableSerializable(object, metaclass=abc.ABCMeta):
 
     def next_record(self) -> Union[RDSModel, None]:
         record = self.create_next_record()
-        if not record:
-            return None
-
-        return record
+        return None if not record else record

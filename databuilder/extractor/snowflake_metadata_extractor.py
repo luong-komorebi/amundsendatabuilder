@@ -126,13 +126,16 @@ class SnowflakeMetadataExtractor(Extractor):
 
             for row in group:
                 last_row = row
-                columns.append(ColumnMetadata(
-                    row['col_name'],
-                    unidecode(row['col_description']) if row['col_description'] else None,
-                    row['col_type'],
-                    row['col_sort_order'])
+                columns.append(
+                    ColumnMetadata(
+                        last_row['col_name'],
+                        unidecode(last_row['col_description'])
+                        if last_row['col_description']
+                        else None,
+                        last_row['col_type'],
+                        last_row['col_sort_order'],
+                    )
                 )
-
             yield TableMetadata(self._database, last_row['cluster'],
                                 last_row['schema'],
                                 last_row['name'],
@@ -145,10 +148,8 @@ class SnowflakeMetadataExtractor(Extractor):
         Provides iterator of result row from SQLAlchemy extractor
         :return:
         """
-        row = self._alchemy_extractor.extract()
-        while row:
+        while row := self._alchemy_extractor.extract():
             yield row
-            row = self._alchemy_extractor.extract()
 
     def _get_table_key(self, row: Dict[str, Any]) -> Union[TableKey, None]:
         """
@@ -156,7 +157,4 @@ class SnowflakeMetadataExtractor(Extractor):
         :param row:
         :return:
         """
-        if row:
-            return TableKey(schema=row['schema'], table_name=row['name'])
-
-        return None
+        return TableKey(schema=row['schema'], table_name=row['name']) if row else None

@@ -97,33 +97,31 @@ class Application(GraphSerializable, TableSerializable):
             dag_id=self.dag,
             task_id=self.task
         )
-        application_node = GraphNode(
+        yield GraphNode(
             key=self.get_application_model_key(),
             label=Application.APPLICATION_LABEL,
             attributes={
                 Application.APPLICATION_URL_NAME: self.application_url,
                 Application.APPLICATION_NAME: Application.APPLICATION_TYPE,
                 Application.APPLICATION_DESCRIPTION: application_description,
-                Application.APPLICATION_ID: application_id
-            }
+                Application.APPLICATION_ID: application_id,
+            },
         )
-        yield application_node
 
     def _create_relation_iterator(self) -> Iterator[GraphRelationship]:
         """
         Create relations between application and table nodes
         :return:
         """
-        graph_relationship = GraphRelationship(
+        yield GraphRelationship(
             start_key=self.get_table_model_key(),
             start_label=TableMetadata.TABLE_NODE_LABEL,
             end_key=self.get_application_model_key(),
             end_label=Application.APPLICATION_LABEL,
             type=Application.TABLE_APPLICATION_RELATION_TYPE,
             reverse_type=Application.APPLICATION_TABLE_RELATION_TYPE,
-            attributes={}
+            attributes={},
         )
-        yield graph_relationship
 
     def _create_record_iterator(self) -> Iterator[RDSModel]:
         application_description = '{app_type} with id {id}'.format(
@@ -134,17 +132,14 @@ class Application(GraphSerializable, TableSerializable):
             dag_id=self.dag,
             task_id=self.task
         )
-        application_record = RDSApplication(
+        yield RDSApplication(
             rk=self.get_application_model_key(),
             application_url=self.application_url,
             name=Application.APPLICATION_TYPE,
             id=application_id,
-            description=application_description
+            description=application_description,
         )
-        yield application_record
-
-        application_table_record = RDSApplicationTable(
+        yield RDSApplicationTable(
             rk=self.get_table_model_key(),
             application_rk=self.get_application_model_key(),
         )
-        yield application_table_record

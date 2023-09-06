@@ -37,12 +37,9 @@ class TestTableLineage(unittest.TestCase):
 
     def test_create_nodes(self) -> None:
         actual = []
-        node = self.table_lineage.create_next_node()
-        while node:
+        while node := self.table_lineage.create_next_node():
             serialized_node = neo4_serializer.serialize_node(node)
             actual.append(serialized_node)
-            node = self.table_lineage.create_next_node()
-
         self.assertEqual(len(actual), 0)
 
     def test_create_relation(self) -> None:
@@ -66,12 +63,9 @@ class TestTableLineage(unittest.TestCase):
         ]
 
         actual = []
-        relation = self.table_lineage.create_next_relation()
-        while relation:
+        while relation := self.table_lineage.create_next_relation():
             serialized_relation = neo4_serializer.serialize_relationship(relation)
             actual.append(serialized_relation)
-            relation = self.table_lineage.create_next_relation()
-
         self.assertEqual(actual, expected_relations)
 
     def test_create_relation_neptune(self) -> None:
@@ -79,82 +73,79 @@ class TestTableLineage(unittest.TestCase):
             [
                 {
                     NEPTUNE_HEADER_ID: "{label}:{from_vertex_id}_{to_vertex_id}".format(
-                        from_vertex_id='Table:' + self.start_key,
-                        to_vertex_id='Table:' + self.end_key1,
+                        from_vertex_id=f'Table:{self.start_key}',
+                        to_vertex_id=f'Table:{self.end_key1}',
                         label=TableLineage.ORIGIN_DEPENDENCY_RELATION_TYPE,
                     ),
                     METADATA_KEY_PROPERTY_NAME_BULK_LOADER_FORMAT: "{label}:{from_vertex_id}_{to_vertex_id}".format(
-                        from_vertex_id='Table:' + self.start_key,
-                        to_vertex_id='Table:' + self.end_key1,
+                        from_vertex_id=f'Table:{self.start_key}',
+                        to_vertex_id=f'Table:{self.end_key1}',
                         label=TableLineage.ORIGIN_DEPENDENCY_RELATION_TYPE,
                     ),
-                    NEPTUNE_RELATIONSHIP_HEADER_FROM: 'Table:' + self.start_key,
-                    NEPTUNE_RELATIONSHIP_HEADER_TO: 'Table:' + self.end_key1,
+                    NEPTUNE_RELATIONSHIP_HEADER_FROM: f'Table:{self.start_key}',
+                    NEPTUNE_RELATIONSHIP_HEADER_TO: f'Table:{self.end_key1}',
                     NEPTUNE_HEADER_LABEL: TableLineage.ORIGIN_DEPENDENCY_RELATION_TYPE,
                     NEPTUNE_LAST_EXTRACTED_AT_RELATIONSHIP_PROPERTY_NAME_BULK_LOADER_FORMAT: ANY,
-                    NEPTUNE_CREATION_TYPE_RELATIONSHIP_PROPERTY_NAME_BULK_LOADER_FORMAT: NEPTUNE_CREATION_TYPE_JOB
+                    NEPTUNE_CREATION_TYPE_RELATIONSHIP_PROPERTY_NAME_BULK_LOADER_FORMAT: NEPTUNE_CREATION_TYPE_JOB,
                 },
                 {
                     NEPTUNE_HEADER_ID: "{label}:{from_vertex_id}_{to_vertex_id}".format(
-                        from_vertex_id='Table:' + self.end_key1,
-                        to_vertex_id='Table:' + self.start_key,
-                        label=TableLineage.DEPENDENCY_ORIGIN_RELATION_TYPE
+                        from_vertex_id=f'Table:{self.end_key1}',
+                        to_vertex_id=f'Table:{self.start_key}',
+                        label=TableLineage.DEPENDENCY_ORIGIN_RELATION_TYPE,
                     ),
                     METADATA_KEY_PROPERTY_NAME_BULK_LOADER_FORMAT: "{label}:{from_vertex_id}_{to_vertex_id}".format(
-                        from_vertex_id='Table:' + self.end_key1,
-                        to_vertex_id='Table:' + self.start_key,
-                        label=TableLineage.DEPENDENCY_ORIGIN_RELATION_TYPE
+                        from_vertex_id=f'Table:{self.end_key1}',
+                        to_vertex_id=f'Table:{self.start_key}',
+                        label=TableLineage.DEPENDENCY_ORIGIN_RELATION_TYPE,
                     ),
-                    NEPTUNE_RELATIONSHIP_HEADER_FROM: 'Table:' + self.end_key1,
-                    NEPTUNE_RELATIONSHIP_HEADER_TO: 'Table:' + self.start_key,
+                    NEPTUNE_RELATIONSHIP_HEADER_FROM: f'Table:{self.end_key1}',
+                    NEPTUNE_RELATIONSHIP_HEADER_TO: f'Table:{self.start_key}',
                     NEPTUNE_HEADER_LABEL: TableLineage.DEPENDENCY_ORIGIN_RELATION_TYPE,
                     NEPTUNE_LAST_EXTRACTED_AT_RELATIONSHIP_PROPERTY_NAME_BULK_LOADER_FORMAT: ANY,
-                    NEPTUNE_CREATION_TYPE_RELATIONSHIP_PROPERTY_NAME_BULK_LOADER_FORMAT: NEPTUNE_CREATION_TYPE_JOB
-                }
+                    NEPTUNE_CREATION_TYPE_RELATIONSHIP_PROPERTY_NAME_BULK_LOADER_FORMAT: NEPTUNE_CREATION_TYPE_JOB,
+                },
             ],
             [
                 {
                     NEPTUNE_HEADER_ID: "{label}:{from_vertex_id}_{to_vertex_id}".format(
-                        from_vertex_id='Table:' + self.start_key,
-                        to_vertex_id='Table:' + self.end_key2,
+                        from_vertex_id=f'Table:{self.start_key}',
+                        to_vertex_id=f'Table:{self.end_key2}',
                         label=TableLineage.ORIGIN_DEPENDENCY_RELATION_TYPE,
                     ),
                     METADATA_KEY_PROPERTY_NAME_BULK_LOADER_FORMAT: "{label}:{from_vertex_id}_{to_vertex_id}".format(
-                        from_vertex_id='Table:' + self.start_key,
-                        to_vertex_id='Table:' + self.end_key2,
+                        from_vertex_id=f'Table:{self.start_key}',
+                        to_vertex_id=f'Table:{self.end_key2}',
                         label=TableLineage.ORIGIN_DEPENDENCY_RELATION_TYPE,
                     ),
-                    NEPTUNE_RELATIONSHIP_HEADER_FROM: 'Table:' + self.start_key,
-                    NEPTUNE_RELATIONSHIP_HEADER_TO: 'Table:' + self.end_key2,
+                    NEPTUNE_RELATIONSHIP_HEADER_FROM: f'Table:{self.start_key}',
+                    NEPTUNE_RELATIONSHIP_HEADER_TO: f'Table:{self.end_key2}',
                     NEPTUNE_HEADER_LABEL: TableLineage.ORIGIN_DEPENDENCY_RELATION_TYPE,
                     NEPTUNE_LAST_EXTRACTED_AT_RELATIONSHIP_PROPERTY_NAME_BULK_LOADER_FORMAT: ANY,
-                    NEPTUNE_CREATION_TYPE_RELATIONSHIP_PROPERTY_NAME_BULK_LOADER_FORMAT: NEPTUNE_CREATION_TYPE_JOB
+                    NEPTUNE_CREATION_TYPE_RELATIONSHIP_PROPERTY_NAME_BULK_LOADER_FORMAT: NEPTUNE_CREATION_TYPE_JOB,
                 },
                 {
                     NEPTUNE_HEADER_ID: "{label}:{from_vertex_id}_{to_vertex_id}".format(
-                        from_vertex_id='Table:' + self.end_key2,
-                        to_vertex_id='Table:' + self.start_key,
-                        label=TableLineage.DEPENDENCY_ORIGIN_RELATION_TYPE
+                        from_vertex_id=f'Table:{self.end_key2}',
+                        to_vertex_id=f'Table:{self.start_key}',
+                        label=TableLineage.DEPENDENCY_ORIGIN_RELATION_TYPE,
                     ),
                     METADATA_KEY_PROPERTY_NAME_BULK_LOADER_FORMAT: "{label}:{from_vertex_id}_{to_vertex_id}".format(
-                        from_vertex_id='Table:' + self.end_key2,
-                        to_vertex_id='Table:' + self.start_key,
-                        label=TableLineage.DEPENDENCY_ORIGIN_RELATION_TYPE
+                        from_vertex_id=f'Table:{self.end_key2}',
+                        to_vertex_id=f'Table:{self.start_key}',
+                        label=TableLineage.DEPENDENCY_ORIGIN_RELATION_TYPE,
                     ),
-                    NEPTUNE_RELATIONSHIP_HEADER_FROM: 'Table:' + self.end_key2,
-                    NEPTUNE_RELATIONSHIP_HEADER_TO: 'Table:' + self.start_key,
+                    NEPTUNE_RELATIONSHIP_HEADER_FROM: f'Table:{self.end_key2}',
+                    NEPTUNE_RELATIONSHIP_HEADER_TO: f'Table:{self.start_key}',
                     NEPTUNE_HEADER_LABEL: TableLineage.DEPENDENCY_ORIGIN_RELATION_TYPE,
                     NEPTUNE_LAST_EXTRACTED_AT_RELATIONSHIP_PROPERTY_NAME_BULK_LOADER_FORMAT: ANY,
-                    NEPTUNE_CREATION_TYPE_RELATIONSHIP_PROPERTY_NAME_BULK_LOADER_FORMAT: NEPTUNE_CREATION_TYPE_JOB
-                }
-            ]
+                    NEPTUNE_CREATION_TYPE_RELATIONSHIP_PROPERTY_NAME_BULK_LOADER_FORMAT: NEPTUNE_CREATION_TYPE_JOB,
+                },
+            ],
         ]
 
         actual = []
-        relation = self.table_lineage.create_next_relation()
-        while relation:
+        while relation := self.table_lineage.create_next_relation():
             serialized_relation = neptune_serializer.convert_relationship(relation)
             actual.append(serialized_relation)
-            relation = self.table_lineage.create_next_relation()
-
         self.assertEqual(actual, expected)

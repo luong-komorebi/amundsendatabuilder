@@ -57,21 +57,20 @@ class DashboardOwner(GraphSerializable, TableSerializable):
             return None
 
     def _create_relation_iterator(self) -> Iterator[GraphRelationship]:
-        relationship = GraphRelationship(
+        yield GraphRelationship(
             start_label=DashboardMetadata.DASHBOARD_NODE_LABEL,
             end_label=User.USER_NODE_LABEL,
             start_key=DashboardMetadata.DASHBOARD_KEY_FORMAT.format(
                 product=self._product,
                 cluster=self._cluster,
                 dashboard_group=self._dashboard_group_id,
-                dashboard_name=self._dashboard_id
+                dashboard_name=self._dashboard_id,
             ),
             end_key=User.get_user_model_key(email=self._email),
             type=OWNER_RELATION_TYPE,
             reverse_type=OWNER_OF_OBJECT_RELATION_TYPE,
-            attributes={}
+            attributes={},
         )
-        yield relationship
 
     def create_next_record(self) -> Union[RDSModel, None]:
         try:

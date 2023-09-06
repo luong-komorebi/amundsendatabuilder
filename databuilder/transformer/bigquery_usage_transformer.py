@@ -28,15 +28,17 @@ class BigqueryUsageTransformer(Transformer):
         if not isinstance(key, TableColumnUsageTuple):
             raise Exception("BigqueryUsageTransformer expects record of type TableColumnUsageTuple")
 
-        col_readers = []
-        col_readers.append(ColumnReader(database=key.database,
-                                        cluster=key.cluster,
-                                        schema=key.schema,
-                                        table=key.table,
-                                        column=key.column,
-                                        user_email=key.email,
-                                        read_count=count))
-
+        col_readers = [
+            ColumnReader(
+                database=key.database,
+                cluster=key.cluster,
+                schema=key.schema,
+                table=key.table,
+                column=key.column,
+                user_email=key.email,
+                read_count=count,
+            )
+        ]
         return TableColumnUsage(col_readers=col_readers)
 
     def get_scope(self) -> str:

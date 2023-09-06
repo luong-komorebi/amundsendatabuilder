@@ -53,7 +53,4 @@ def _get_neo4j_suffix_value(value: Any) -> str:
     if isinstance(value, int):
         return UNQUOTED_SUFFIX
 
-    if isinstance(value, bool):
-        return UNQUOTED_SUFFIX
-
-    return ''
+    return UNQUOTED_SUFFIX if isinstance(value, bool) else ''

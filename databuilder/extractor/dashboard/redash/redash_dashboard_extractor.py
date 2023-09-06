@@ -93,8 +93,9 @@ class RedashDashboardExtractor(Extractor):
         )
 
         self._parse_tables = None
-        tbl_parser_path = conf.get_string(RedashDashboardExtractor.TABLE_PARSER_KEY)
-        if tbl_parser_path:
+        if tbl_parser_path := conf.get_string(
+            RedashDashboardExtractor.TABLE_PARSER_KEY
+        ):
             module_name, fn_name = tbl_parser_path.rsplit('.', 1)
             mod = importlib.import_module(module_name)
             self._parse_tables = getattr(mod, fn_name)
@@ -131,19 +132,12 @@ class RedashDashboardExtractor(Extractor):
                 dashboard_url = f'{self._redash_base_url}/dashboard/{record["slug"]}'
 
             dash_data = {
-                'dashboard_group':
-                    RedashDashboardExtractor.DASHBOARD_GROUP_NAME,
-                'dashboard_group_url':
-                    self._redash_base_url,
-                'dashboard_name':
-                    record['dashboard_name'],
-                'dashboard_url':
-                    dashboard_url,
-                'created_timestamp':
-                    record['created_timestamp']
-            }
-            dash_data.update(identity_data)
-
+                'dashboard_group': RedashDashboardExtractor.DASHBOARD_GROUP_NAME,
+                'dashboard_group_url': self._redash_base_url,
+                'dashboard_name': record['dashboard_name'],
+                'dashboard_url': dashboard_url,
+                'created_timestamp': record['created_timestamp'],
+            } | identity_data
             widgets = sort_widgets(record['widgets'])
             text_widgets = get_text_widgets(widgets)
             viz_widgets = get_visualization_widgets(widgets)
@@ -153,14 +147,12 @@ class RedashDashboardExtractor(Extractor):
 
             yield DashboardMetadata(**dash_data)
 
-            last_mod_data = {'last_modified_timestamp': record['last_modified_timestamp']}
-            last_mod_data.update(identity_data)
-
+            last_mod_data = {
+                'last_modified_timestamp': record['last_modified_timestamp']
+            } | identity_data
             yield DashboardLastModifiedTimestamp(**last_mod_data)
 
-            owner_data = {'email': record['user']['email']}
-            owner_data.update(identity_data)
-
+            owner_data = {'email': record['user']['email']} | identity_data
             yield DashboardOwner(**owner_data)
 
             table_keys = set()
@@ -170,10 +162,8 @@ class RedashDashboardExtractor(Extractor):
                     'query_id': str(viz.query_id),
                     'query_name': viz.query_name,
                     'url': self._redash_base_url + viz.query_relative_url,
-                    'query_text': viz.raw_query
-                }
-
-                query_data.update(identity_data)
+                    'query_text': viz.raw_query,
+                } | identity_data
                 yield DashboardQuery(**query_data)
 
                 chart_data = {
@@ -181,8 +171,7 @@ class RedashDashboardExtractor(Extractor):
                     'chart_id': str(viz.visualization_id),
                     'chart_name': viz.visualization_name,
                     'chart_type': viz.visualization_type,
-                }
-                chart_data.update(identity_data)
+                } | identity_data
                 yield DashboardChart(**chart_data)
 
                 # if a table parser is provided, retrieve tables from this viz
@@ -190,7 +179,7 @@ class RedashDashboardExtractor(Extractor):
                     for tbl in self._parse_tables(viz):
                         table_keys.add(tbl.key)
 
-            if len(table_keys) > 0:
+            if table_keys:
                 yield DashboardTable(table_ids=list(table_keys), **identity_data)
 
     def extract(self) -> Any:
@@ -245,15 +234,12 @@ class RedashDashboardExtractor(Extractor):
 
     def _build_transformer(self) -> ChainedTransformer:
 
-        transformers = []
-
         # transform timestamps from ISO to unix epoch
         ts_transformer_1 = TimestampStringToEpoch()
         ts_transformer_1.init(ConfigFactory.from_dict({
             TS_FIELD_NAME: 'created_timestamp',
         }))
-        transformers.append(ts_transformer_1)
-
+        transformers = [ts_transformer_1]
         ts_transformer_2 = TimestampStringToEpoch()
         ts_transformer_2.init(ConfigFactory.from_dict({
             TS_FIELD_NAME: 'last_modified_timestamp',

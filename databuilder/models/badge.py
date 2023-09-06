@@ -57,15 +57,18 @@ class BadgeMetadata(GraphSerializable, TableSerializable):
             'Dashboard': dashboard_key_pattern,
             'Column': column_key_pattern,
         }
-        if start_label in map_label_to_key_pattern.keys():
-            self.start_label = start_label
-            if map_label_to_key_pattern[start_label].match(start_key):
-                self.start_key = start_key
-            else:
-                raise Exception(start_key + ' does not match the key pattern for a ' + start_label)
-        else:
-            raise Exception(start_label + ' is not a valid start_label for a Badge relation')
+        if start_label not in map_label_to_key_pattern:
+            raise Exception(
+                f'{start_label} is not a valid start_label for a Badge relation'
+            )
 
+        self.start_label = start_label
+        if map_label_to_key_pattern[start_label].match(start_key):
+            self.start_key = start_key
+        else:
+            raise Exception(
+                f'{start_key} does not match the key pattern for a {start_label}'
+            )
         self._node_iter = self._create_node_iterator()
         self._relation_iter = self._create_relation_iterator()
         self._record_iter = self._create_record_iterator()
@@ -94,9 +97,7 @@ class BadgeMetadata(GraphSerializable, TableSerializable):
 
     @staticmethod
     def get_badge_key(name: str) -> str:
-        if not name:
-            return ''
-        return BadgeMetadata.BADGE_KEY_FORMAT.format(badge=name)
+        return '' if not name else BadgeMetadata.BADGE_KEY_FORMAT.format(badge=name)
 
     def get_metadata_model_key(self) -> str:
         return self.start_key
@@ -147,16 +148,10 @@ class BadgeMetadata(GraphSerializable, TableSerializable):
         Create badge nodes
         :return:
         """
-        nodes = self.get_badge_nodes()
-        for node in nodes:
-            yield node
+        yield from self.get_badge_nodes()
 
     def _create_relation_iterator(self) -> Iterator[GraphRelationship]:
-        relations = self.get_badge_relations()
-        for relation in relations:
-            yield relation
+        yield from self.get_badge_relations()
 
     def _create_record_iterator(self) -> Iterator[RDSModel]:
-        records = self.get_badge_records()
-        for record in records:
-            yield record
+        yield from self.get_badge_records()

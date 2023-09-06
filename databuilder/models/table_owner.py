@@ -75,14 +75,11 @@ class TableOwner(GraphSerializable, TableSerializable):
         """
         for owner in self.owners:
             if owner:
-                node = GraphNode(
+                yield GraphNode(
                     key=self.get_owner_model_key(owner),
                     label=User.USER_NODE_LABEL,
-                    attributes={
-                        User.USER_NODE_EMAIL: owner
-                    }
+                    attributes={User.USER_NODE_EMAIL: owner},
                 )
-                yield node
 
     def _create_relation_iterator(self) -> Iterator[GraphRelationship]:
         """
@@ -91,31 +88,24 @@ class TableOwner(GraphSerializable, TableSerializable):
         """
         for owner in self.owners:
             if owner:
-                relationship = GraphRelationship(
+                yield GraphRelationship(
                     start_key=self.get_owner_model_key(owner),
                     start_label=User.USER_NODE_LABEL,
                     end_key=self.get_metadata_model_key(),
                     end_label='Table',
                     type=TableOwner.OWNER_TABLE_RELATION_TYPE,
                     reverse_type=TableOwner.TABLE_OWNER_RELATION_TYPE,
-                    attributes={}
+                    attributes={},
                 )
-                yield relationship
 
     def _create_record_iterator(self) -> Iterator[RDSModel]:
         for owner in self.owners:
             if owner:
-                user_record = RDSUser(
-                    rk=self.get_owner_model_key(owner),
-                    email=owner
-                )
-                yield user_record
-
-                table_owner_record = RDSTableOwner(
+                yield RDSUser(rk=self.get_owner_model_key(owner), email=owner)
+                yield RDSTableOwner(
                     table_rk=self.get_metadata_model_key(),
-                    user_rk=self.get_owner_model_key(owner)
+                    user_rk=self.get_owner_model_key(owner),
                 )
-                yield table_owner_record
 
     def __repr__(self) -> str:
         return f'TableOwner({self.db!r}, {self.cluster!r}, {self.schema!r}, {self.table!r}, {self.owners!r})'

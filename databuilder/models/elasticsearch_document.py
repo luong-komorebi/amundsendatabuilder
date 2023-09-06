@@ -17,6 +17,5 @@ class ElasticsearchDocument:
         Convert object to json
         :return:
         """
-        obj_dict = {k: v for k, v in sorted(self.__dict__.items())}
-        data = json.dumps(obj_dict) + "\n"
-        return data
+        obj_dict = dict(sorted(self.__dict__.items()))
+        return json.dumps(obj_dict) + "\n"

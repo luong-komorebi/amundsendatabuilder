@@ -80,7 +80,7 @@ class TableauGraphQLApiExtractor(Extractor):
         self._auth_token = TableauDashboardAuth(self._conf).token
         self._query = self._conf.get(TableauGraphQLApiExtractor.QUERY)
         self._iterator: Optional[Iterator[Dict[str, Any]]] = None
-        self._static_dict = conf.get(STATIC_RECORD_DICT, dict())
+        self._static_dict = conf.get(STATIC_RECORD_DICT, {})
         self._metadata_url = '{api_base_url}/api/metadata/graphql'.format(
             api_base_url=self._conf.get_string(TableauGraphQLApiExtractor.API_BASE_URL)
         )

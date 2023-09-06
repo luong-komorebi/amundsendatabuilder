@@ -58,10 +58,7 @@ class ModeDashboardUserExtractor(Extractor):
 
     def extract(self) -> Any:
         record = self._extractor.extract()
-        if not record:
-            return None
-
-        return self._transformer.transform(record=record)
+        return None if not record else self._transformer.transform(record=record)
 
     def get_scope(self) -> str:
         return 'extractor.mode_dashboard_owner'
@@ -100,8 +97,12 @@ class ModeDashboardUserExtractor(Extractor):
         json_path = 'email'
         field_names = ['email']
         failure_handler = HttpFailureSkipOnStatus(status_codes_to_skip={404})
-        mode_user_email_query = RestApiQuery(query_to_join=mode_user_ids_query, url=user_url_template,
-                                             params=params, json_path=json_path, field_names=field_names,
-                                             skip_no_result=True, can_skip_failure=failure_handler.can_skip_failure)
-
-        return mode_user_email_query
+        return RestApiQuery(
+            query_to_join=mode_user_ids_query,
+            url=user_url_template,
+            params=params,
+            json_path=json_path,
+            field_names=field_names,
+            skip_no_result=True,
+            can_skip_failure=failure_handler.can_skip_failure,
+        )

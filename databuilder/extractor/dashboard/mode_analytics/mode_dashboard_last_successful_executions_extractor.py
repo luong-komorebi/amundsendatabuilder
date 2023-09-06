@@ -54,8 +54,11 @@ class ModeDashboardLastSuccessfulExecutionExtractor(ModeDashboardExecutionsExtra
         url = 'https://app.mode.com/api/{organization}/spaces/{dashboard_group_id}/reports'
         json_path = '_embedded.reports[*].[token,last_successfully_run_at]'
         field_names = ['dashboard_id', 'execution_timestamp']
-        last_successful_run_query = ModePaginatedRestApiQuery(query_to_join=spaces_query, url=url, params=params,
-                                                              json_path=json_path, field_names=field_names,
-                                                              skip_no_result=True)
-
-        return last_successful_run_query
+        return ModePaginatedRestApiQuery(
+            query_to_join=spaces_query,
+            url=url,
+            params=params,
+            json_path=json_path,
+            field_names=field_names,
+            skip_no_result=True,
+        )

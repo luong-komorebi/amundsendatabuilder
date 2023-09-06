@@ -31,13 +31,15 @@ class TestTableLastUpdated(unittest.TestCase):
                                                  last_updated_time_epoch=25195665,
                                                  schema='default')
 
-        self.expected_node_results = [{
-            NODE_KEY: 'hive://gold.default/test_table/timestamp',
-            NODE_LABEL: 'Timestamp',
-            'last_updated_timestamp:UNQUOTED': 25195665,
-            timestamp_constants.TIMESTAMP_PROPERTY + ":UNQUOTED": 25195665,
-            'name': 'last_updated_timestamp'
-        }]
+        self.expected_node_results = [
+            {
+                NODE_KEY: 'hive://gold.default/test_table/timestamp',
+                NODE_LABEL: 'Timestamp',
+                'last_updated_timestamp:UNQUOTED': 25195665,
+                f"{timestamp_constants.TIMESTAMP_PROPERTY}:UNQUOTED": 25195665,
+                'name': 'last_updated_timestamp',
+            }
+        ]
 
         self.expected_relation_results = [{
             RELATION_START_KEY: 'hive://gold.default/test_table',
@@ -58,52 +60,43 @@ class TestTableLastUpdated(unittest.TestCase):
 
     def test_create_nodes(self) -> None:
         actual = []
-        node = self.tableLastUpdated.create_next_node()
-        while node:
+        while node := self.tableLastUpdated.create_next_node():
             serialize_node = neo4_serializer.serialize_node(node)
             actual.append(serialize_node)
-            node = self.tableLastUpdated.create_next_node()
-
         self.assertEqual(actual, self.expected_node_results)
 
     def test_create_nodes_neptune(self) -> None:
-        node_id = TableLastUpdated.LAST_UPDATED_NODE_LABEL + ":" + self.tableLastUpdated.get_last_updated_model_key()
-        expected_nodes = [{
-            NEPTUNE_HEADER_ID: node_id,
-            METADATA_KEY_PROPERTY_NAME_BULK_LOADER_FORMAT: self.tableLastUpdated.get_last_updated_model_key(),
-            NEPTUNE_HEADER_LABEL: TableLastUpdated.LAST_UPDATED_NODE_LABEL,
-            NEPTUNE_LAST_EXTRACTED_AT_RELATIONSHIP_PROPERTY_NAME_BULK_LOADER_FORMAT: ANY,
-            NEPTUNE_CREATION_TYPE_NODE_PROPERTY_NAME_BULK_LOADER_FORMAT: NEPTUNE_CREATION_TYPE_JOB,
-            'name:String(single)': 'last_updated_timestamp',
-            'last_updated_timestamp:Long(single)': 25195665,
-            timestamp_constants.TIMESTAMP_PROPERTY + ":Long(single)": 25195665,
-        }]
+        node_id = f"{TableLastUpdated.LAST_UPDATED_NODE_LABEL}:{self.tableLastUpdated.get_last_updated_model_key()}"
+        expected_nodes = [
+            {
+                NEPTUNE_HEADER_ID: node_id,
+                METADATA_KEY_PROPERTY_NAME_BULK_LOADER_FORMAT: self.tableLastUpdated.get_last_updated_model_key(),
+                NEPTUNE_HEADER_LABEL: TableLastUpdated.LAST_UPDATED_NODE_LABEL,
+                NEPTUNE_LAST_EXTRACTED_AT_RELATIONSHIP_PROPERTY_NAME_BULK_LOADER_FORMAT: ANY,
+                NEPTUNE_CREATION_TYPE_NODE_PROPERTY_NAME_BULK_LOADER_FORMAT: NEPTUNE_CREATION_TYPE_JOB,
+                'name:String(single)': 'last_updated_timestamp',
+                'last_updated_timestamp:Long(single)': 25195665,
+                f"{timestamp_constants.TIMESTAMP_PROPERTY}:Long(single)": 25195665,
+            }
+        ]
 
         actual = []
-        next_node = self.tableLastUpdated.create_next_node()
-        while next_node:
+        while next_node := self.tableLastUpdated.create_next_node():
             next_node_serialized = neptune_serializer.convert_node(next_node)
             actual.append(next_node_serialized)
-            next_node = self.tableLastUpdated.create_next_node()
-
         self.assertEqual(actual, expected_nodes)
 
     def test_create_relation(self) -> None:
         actual = []
-        relation = self.tableLastUpdated.create_next_relation()
-        while relation:
+        while relation := self.tableLastUpdated.create_next_relation():
             serialized_relation = neo4_serializer.serialize_relationship(relation)
             actual.append(serialized_relation)
-            relation = self.tableLastUpdated.create_next_relation()
 
     def test_create_relation_neptune(self) -> None:
         actual = []
-        next_relation = self.tableLastUpdated.create_next_relation()
-        while next_relation:
+        while next_relation := self.tableLastUpdated.create_next_relation():
             next_relation_serialized = neptune_serializer.convert_relationship(next_relation)
             actual.append(next_relation_serialized)
-            next_relation = self.tableLastUpdated.create_next_relation()
-
         expected = [
             [
                 {
@@ -155,10 +148,7 @@ class TestTableLastUpdated(unittest.TestCase):
         }]
 
         actual = []
-        record = self.tableLastUpdated.create_next_record()
-        while record:
+        while record := self.tableLastUpdated.create_next_record():
             serialized_record = mysql_serializer.serialize_record(record)
             actual.append(serialized_record)
-            record = self.tableLastUpdated.create_next_record()
-
         self.assertEqual(expected, actual)

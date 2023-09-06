@@ -25,11 +25,8 @@ class TestTableSerializable(unittest.TestCase):
         movie = Movie('Top Gun', actors)
 
         actual = []
-        node_row = movie.next_record()
-        while node_row:
+        while node_row := movie.next_record():
             actual.append(mysql_serializer.serialize_record(node_row))
-            node_row = movie.next_record()
-
         expected = [
             {
                 'rk': 'movie://Top Gun',
@@ -107,24 +104,13 @@ class Movie(TableSerializable):
             return None
 
     def _create_record_iterator(self) -> Iterator[RDSModel]:
-        movie_record = RDSMovie(
-            rk=Movie.KEY_FORMAT.format(self._name),
-            name=self._name
-        )
-        yield movie_record
-
+        yield RDSMovie(rk=Movie.KEY_FORMAT.format(self._name), name=self._name)
         for actor in self._actors:
-            actor_record = RDSActor(
-                rk=Actor.KEY_FORMAT.format(actor.name),
-                name=actor.name
-            )
-            yield actor_record
-
-            movie_actor_record = RDSMovieActor(
+            yield RDSActor(rk=Actor.KEY_FORMAT.format(actor.name), name=actor.name)
+            yield RDSMovieActor(
                 movie_rk=Movie.KEY_FORMAT.format(self._name),
-                actor_rk=Actor.KEY_FORMAT.format(actor.name)
+                actor_rk=Actor.KEY_FORMAT.format(actor.name),
             )
-            yield movie_actor_record
 
 
 if __name__ == '__main__':

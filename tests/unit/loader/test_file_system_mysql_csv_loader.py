@@ -23,7 +23,7 @@ class TestFileSystemMySQLCSVLoader(unittest.TestCase):
         directory = '/var/tmp/TestFileSystemMySQLCSVLoader'
         self._conf = ConfigFactory.from_dict(
             {
-                FSMySQLCSVLoader.RECORD_DIR_PATH: '{}/{}'.format(directory, 'records'),
+                FSMySQLCSVLoader.RECORD_DIR_PATH: f'{directory}/records',
                 FSMySQLCSVLoader.SHOULD_DELETE_CREATED_DIR: True,
                 FSMySQLCSVLoader.FORCE_CREATE_DIR: True,
             }
@@ -42,9 +42,7 @@ class TestFileSystemMySQLCSVLoader(unittest.TestCase):
 
         loader.close()
 
-        expected_record_path = '{}/../resources/fs_mysql_csv_loader/records'.format(
-            os.path.join(os.path.dirname(__file__))
-        )
+        expected_record_path = f'{os.path.join(os.path.dirname(__file__))}/../resources/fs_mysql_csv_loader/records'
         expected_records = self._get_csv_rows(expected_record_path)
         actual_records = self._get_csv_rows(self._conf.get_string(FSMySQLCSVLoader.RECORD_DIR_PATH))
 

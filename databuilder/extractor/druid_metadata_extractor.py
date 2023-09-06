@@ -79,10 +79,14 @@ class DruidMetadataExtractor(Extractor):
             # no table description and column description
             for row in group:
                 last_row = row
-                columns.append(ColumnMetadata(name=row['col_name'],
-                                              description='',
-                                              col_type=row['col_type'],
-                                              sort_order=row['col_sort_order']))
+                columns.append(
+                    ColumnMetadata(
+                        name=last_row['col_name'],
+                        description='',
+                        col_type=last_row['col_type'],
+                        sort_order=last_row['col_sort_order'],
+                    )
+                )
             yield TableMetadata(database='druid',
                                 cluster=self._cluster,
                                 schema=last_row['schema'],
@@ -95,10 +99,8 @@ class DruidMetadataExtractor(Extractor):
         Provides iterator of result row from dbapi extractor
         :return:
         """
-        row = self._alchemy_extractor.extract()
-        while row:
+        while row := self._alchemy_extractor.extract():
             yield row
-            row = self._alchemy_extractor.extract()
 
     def _get_table_key(self, row: Dict[str, Any]) -> Union[TableKey, None]:
         """
@@ -106,7 +108,4 @@ class DruidMetadataExtractor(Extractor):
         :param row:
         :return:
         """
-        if row:
-            return TableKey(schema=row['schema'], table_name=row['name'])
-
-        return None
+        return TableKey(schema=row['schema'], table_name=row['name']) if row else None

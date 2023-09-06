@@ -137,7 +137,7 @@ class Neo4jSearchDataExtractor(Extractor):
 
         self.neo4j_extractor = Neo4jExtractor()
         # write the cypher query in configs in Neo4jExtractor scope
-        key = self.neo4j_extractor.get_scope() + '.' + Neo4jExtractor.CYPHER_QUERY_CONFIG_KEY
+        key = f'{self.neo4j_extractor.get_scope()}.{Neo4jExtractor.CYPHER_QUERY_CONFIG_KEY}'
         self.conf.put(key, self.cypher_query)
         # initialize neo4j_extractor from configs
         self.neo4j_extractor.init(Scoped.get_scoped_conf(self.conf, self.neo4j_extractor.get_scope()))

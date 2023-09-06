@@ -60,32 +60,23 @@ class TestTableStats(unittest.TestCase):
 
     def test_create_nodes(self) -> None:
         actual = []
-        node = self.table_stats.create_next_node()
-        while node:
+        while node := self.table_stats.create_next_node():
             serialized_node = neo4_serializer.serialize_node(node)
             actual.append(serialized_node)
-            node = self.table_stats.create_next_node()
-
         self.assertEqual(actual, self.expected_node_results)
 
     def test_create_relation(self) -> None:
         actual = []
-        relation = self.table_stats.create_next_relation()
-        while relation:
+        while relation := self.table_stats.create_next_relation():
             serialized_relation = neo4_serializer.serialize_relationship(relation)
             actual.append(serialized_relation)
-            relation = self.table_stats.create_next_relation()
-
         self.assertEqual(actual, self.expected_relation_results)
 
     def test_create_nodes_neptune(self) -> None:
         actual = []
-        next_node = self.table_stats.create_next_node()
-        while next_node:
+        while next_node := self.table_stats.create_next_node():
             serialized_node = neptune_serializer.convert_node(next_node)
             actual.append(serialized_node)
-            next_node = self.table_stats.create_next_node()
-
         expected_neptune_nodes = [{
             NEPTUNE_HEADER_ID: 'Stat:hive://gold.base/test/col/avg/',
             METADATA_KEY_PROPERTY_NAME_BULK_LOADER_FORMAT: 'hive://gold.base/test/col/avg/',
@@ -150,12 +141,9 @@ class TestTableStats(unittest.TestCase):
         ]
 
         actual = []
-        next_relation = self.table_stats.create_next_relation()
-        while next_relation:
+        while next_relation := self.table_stats.create_next_relation():
             serialized_relation = neptune_serializer.convert_relationship(next_relation)
             actual.append(serialized_relation)
-            next_relation = self.table_stats.create_next_relation()
-
         self.assertListEqual(actual, expected)
 
     def test_create_records(self) -> None:
@@ -169,10 +157,7 @@ class TestTableStats(unittest.TestCase):
         }]
 
         actual = []
-        record = self.table_stats.create_next_record()
-        while record:
+        while record := self.table_stats.create_next_record():
             serialized_record = mysql_serializer.serialize_record(record)
             actual.append(serialized_record)
-            record = self.table_stats.create_next_record()
-
         self.assertEqual(actual, expected)

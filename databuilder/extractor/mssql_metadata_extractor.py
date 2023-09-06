@@ -138,11 +138,12 @@ class MSSQLMetadataExtractor(Extractor):
                 last_row = row
                 columns.append(
                     ColumnMetadata(
-                        row['col_name'],
-                        row['col_description'],
-                        row['col_type'],
-                        row['col_sort_order']))
-
+                        last_row['col_name'],
+                        last_row['col_description'],
+                        last_row['col_type'],
+                        last_row['col_sort_order'],
+                    )
+                )
             yield TableMetadata(
                 self._database,
                 last_row['cluster'],
@@ -157,10 +158,8 @@ class MSSQLMetadataExtractor(Extractor):
         Provides iterator of result row from SQLAlchemy extractor
         :return:
         """
-        row = self._alchemy_extractor.extract()
-        while row:
+        while row := self._alchemy_extractor.extract():
             yield row
-            row = self._alchemy_extractor.extract()
 
     def _get_table_key(self, row: Dict[str, Any]) -> Union[TableKey, None]:
         """

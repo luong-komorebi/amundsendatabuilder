@@ -43,13 +43,16 @@ class TableauGraphQLApiLastModifiedExtractor(TableauGraphQLApiExtractor):
                 LOGGER.warning(f'Ignoring workbook (ID:{workbook["vizportalUrlId"]}) ' +
                                f'in project (ID:{workbook["projectVizportalUrlId"]}) because of a lack of permission')
                 continue
-            data = {
+            yield {
                 'dashboard_group_id': workbook['projectName'],
-                'dashboard_id': TableauDashboardUtils.sanitize_workbook_name(workbook['name']),
+                'dashboard_id': TableauDashboardUtils.sanitize_workbook_name(
+                    workbook['name']
+                ),
                 'last_modified_timestamp': workbook['updatedAt'],
-                'cluster': self._conf.get_string(TableauGraphQLApiLastModifiedExtractor.CLUSTER)
+                'cluster': self._conf.get_string(
+                    TableauGraphQLApiLastModifiedExtractor.CLUSTER
+                ),
             }
-            yield data
 
 
 class TableauDashboardLastModifiedExtractor(Extractor):
@@ -102,11 +105,10 @@ class TableauDashboardLastModifiedExtractor(Extractor):
         self._transformer = ChainedTransformer(transformers=transformers)
 
     def extract(self) -> Any:
-        record = self._extractor.extract()
-        if not record:
+        if record := self._extractor.extract():
+            return next(self._transformer.transform(record=record), None)
+        else:
             return None
-
-        return next(self._transformer.transform(record=record), None)
 
     def get_scope(self) -> str:
         return 'extractor.tableau_dashboard_last_modified'

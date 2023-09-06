@@ -47,8 +47,7 @@ class Neo4jExtractor(Extractor):
 
         self._extract_iter: Union[None, Iterator] = None
 
-        model_class = conf.get(Neo4jExtractor.MODEL_CLASS_CONFIG_KEY, None)
-        if model_class:
+        if model_class := conf.get(Neo4jExtractor.MODEL_CLASS_CONFIG_KEY, None):
             module_name, class_name = model_class.rsplit(".", 1)
             mod = importlib.import_module(module_name)
             self.model_class = getattr(mod, class_name)
@@ -81,8 +80,7 @@ class Neo4jExtractor(Extractor):
         Create an iterator to execute sql.
         """
         LOGGER.info('Executing query %s', self.cypher_query)
-        result = tx.run(self.cypher_query)
-        return result
+        return tx.run(self.cypher_query)
 
     def _get_extract_iter(self) -> Iterator[Any]:
         """
@@ -94,8 +92,7 @@ class Neo4jExtractor(Extractor):
 
             for result in self.results:
                 if hasattr(self, 'model_class'):
-                    obj = self.model_class(**result)
-                    yield obj
+                    yield self.model_class(**result)
                 else:
                     yield result
 

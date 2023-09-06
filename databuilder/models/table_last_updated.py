@@ -32,7 +32,7 @@ class TableLastUpdated(GraphSerializable, TableSerializable):
                  cluster: str = 'gold'
                  ) -> None:
         self.table_name = table_name
-        self.last_updated_time = int(last_updated_time_epoch)
+        self.last_updated_time = last_updated_time_epoch
         self.schema = schema
         self.db = db
         self.cluster = cluster
@@ -83,43 +83,40 @@ class TableLastUpdated(GraphSerializable, TableSerializable):
         Create a last_updated node
         :return:
         """
-        node = GraphNode(
+        yield GraphNode(
             key=self.get_last_updated_model_key(),
             label=TableLastUpdated.LAST_UPDATED_NODE_LABEL,
             attributes={
                 TableLastUpdated.TIMESTAMP_PROPERTY: self.last_updated_time,
                 timestamp_constants.TIMESTAMP_PROPERTY: self.last_updated_time,
-                TableLastUpdated.TIMESTAMP_NAME_PROPERTY: timestamp_constants.TimestampName.last_updated_timestamp.name
-            }
+                TableLastUpdated.TIMESTAMP_NAME_PROPERTY: timestamp_constants.TimestampName.last_updated_timestamp.name,
+            },
         )
-        yield node
 
     def _create_relation_iterator(self) -> Iterator[GraphRelationship]:
         """
         Create relations mapping last updated node with table node
         :return:
         """
-        relationship = GraphRelationship(
+        yield GraphRelationship(
             start_label=TableMetadata.TABLE_NODE_LABEL,
             start_key=self.get_table_model_key(),
             end_label=TableLastUpdated.LAST_UPDATED_NODE_LABEL,
             end_key=self.get_last_updated_model_key(),
             type=TableLastUpdated.TABLE_LASTUPDATED_RELATION_TYPE,
             reverse_type=TableLastUpdated.LASTUPDATED_TABLE_RELATION_TYPE,
-            attributes={}
+            attributes={},
         )
-        yield relationship
 
     def _create_record_iterator(self) -> Iterator[RDSModel]:
         """
         Create a table timestamp record
         :return:
         """
-        record = RDSTableTimestamp(
+        yield RDSTableTimestamp(
             rk=self.get_last_updated_model_key(),
             last_updated_timestamp=self.last_updated_time,
             timestamp=self.last_updated_time,
             name=timestamp_constants.TimestampName.last_updated_timestamp.name,
-            table_rk=self.get_table_model_key()
+            table_rk=self.get_table_model_key(),
         )
-        yield record

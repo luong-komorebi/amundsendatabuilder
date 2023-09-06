@@ -46,14 +46,11 @@ class ESLastUpdated(GraphSerializable, TableSerializable):
         """
         Create an es_updated_timestamp node
         """
-        node = GraphNode(
+        yield GraphNode(
             key=ESLastUpdated.KEY,
             label=ESLastUpdated.LABEL,
-            attributes={
-                ESLastUpdated.LATEST_TIMESTAMP: self.timestamp
-            }
+            attributes={ESLastUpdated.LATEST_TIMESTAMP: self.timestamp},
         )
-        yield node
 
     def create_next_relation(self) -> Union[GraphRelationship, None]:
         try:
@@ -63,7 +60,6 @@ class ESLastUpdated(GraphSerializable, TableSerializable):
 
     def _create_relation_iterator(self) -> Iterator[GraphRelationship]:
         return
-        yield
 
     def create_next_record(self) -> Union[RDSModel, None]:
         try:
@@ -72,6 +68,6 @@ class ESLastUpdated(GraphSerializable, TableSerializable):
             return None
 
     def _create_record_iterator(self) -> Iterator[RDSModel]:
-        record = RDSUpdatedTimestamp(rk=ESLastUpdated.KEY,
-                                     latest_timestamp=self.timestamp)
-        yield record
+        yield RDSUpdatedTimestamp(
+            rk=ESLastUpdated.KEY, latest_timestamp=self.timestamp
+        )

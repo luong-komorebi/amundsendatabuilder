@@ -33,48 +33,32 @@ es = Elasticsearch([
 ])
 
 elasticsearch_client = es
-elasticsearch_new_index_key = 'tables-' + str(uuid.uuid4())
+elasticsearch_new_index_key = f'tables-{str(uuid.uuid4())}'
 elasticsearch_new_index_key_type = 'table'
 elasticsearch_index_alias = 'table_search_index'
 
-job_config = ConfigFactory.from_dict({
-    'extractor.atlas_search_data.{}'.format(AtlasSearchDataExtractor.ATLAS_URL_CONFIG_KEY):
-        atlas_url,
-    'extractor.atlas_search_data.{}'.format(AtlasSearchDataExtractor.ATLAS_PORT_CONFIG_KEY):
-        atlas_port,
-    'extractor.atlas_search_data.{}'.format(AtlasSearchDataExtractor.ATLAS_PROTOCOL_CONFIG_KEY):
-        atlas_protocol,
-    'extractor.atlas_search_data.{}'.format(AtlasSearchDataExtractor.ATLAS_VALIDATE_SSL_CONFIG_KEY):
-        atlas_verify_ssl,
-    'extractor.atlas_search_data.{}'.format(AtlasSearchDataExtractor.ATLAS_USERNAME_CONFIG_KEY):
-        atlas_username,
-    'extractor.atlas_search_data.{}'.format(AtlasSearchDataExtractor.ATLAS_PASSWORD_CONFIG_KEY):
-        atlas_password,
-    'extractor.atlas_search_data.{}'.format(AtlasSearchDataExtractor.ATLAS_SEARCH_CHUNK_SIZE_KEY):
-        atlas_search_chunk_size,
-    'extractor.atlas_search_data.{}'.format(AtlasSearchDataExtractor.ATLAS_DETAILS_CHUNK_SIZE_KEY):
-        atlas_details_chunk_size,
-    'extractor.atlas_search_data.{}'.format(AtlasSearchDataExtractor.PROCESS_POOL_SIZE_KEY):
-        process_pool_size,
-    'extractor.atlas_search_data.{}'.format(AtlasSearchDataExtractor.ENTITY_TYPE_KEY):
-        entity_type,
-    'loader.filesystem.elasticsearch.{}'.format(FSElasticsearchJSONLoader.FILE_PATH_CONFIG_KEY):
-        extracted_search_data_path,
-    'loader.filesystem.elasticsearch.{}'.format(FSElasticsearchJSONLoader.FILE_MODE_CONFIG_KEY):
-        'w',
-    'publisher.elasticsearch.{}'.format(ElasticsearchPublisher.FILE_PATH_CONFIG_KEY):
-        extracted_search_data_path,
-    'publisher.elasticsearch.{}'.format(ElasticsearchPublisher.FILE_MODE_CONFIG_KEY):
-        'r',
-    'publisher.elasticsearch.{}'.format(ElasticsearchPublisher.ELASTICSEARCH_CLIENT_CONFIG_KEY):
-        elasticsearch_client,
-    'publisher.elasticsearch.{}'.format(ElasticsearchPublisher.ELASTICSEARCH_NEW_INDEX_CONFIG_KEY):
-        elasticsearch_new_index_key,
-    'publisher.elasticsearch.{}'.format(ElasticsearchPublisher.ELASTICSEARCH_DOC_TYPE_CONFIG_KEY):
-        elasticsearch_new_index_key_type,
-    'publisher.elasticsearch.{}'.format(ElasticsearchPublisher.ELASTICSEARCH_ALIAS_CONFIG_KEY):
-        elasticsearch_index_alias
-})
+job_config = ConfigFactory.from_dict(
+    {
+        f'extractor.atlas_search_data.{AtlasSearchDataExtractor.ATLAS_URL_CONFIG_KEY}': atlas_url,
+        f'extractor.atlas_search_data.{AtlasSearchDataExtractor.ATLAS_PORT_CONFIG_KEY}': atlas_port,
+        f'extractor.atlas_search_data.{AtlasSearchDataExtractor.ATLAS_PROTOCOL_CONFIG_KEY}': atlas_protocol,
+        f'extractor.atlas_search_data.{AtlasSearchDataExtractor.ATLAS_VALIDATE_SSL_CONFIG_KEY}': atlas_verify_ssl,
+        f'extractor.atlas_search_data.{AtlasSearchDataExtractor.ATLAS_USERNAME_CONFIG_KEY}': atlas_username,
+        f'extractor.atlas_search_data.{AtlasSearchDataExtractor.ATLAS_PASSWORD_CONFIG_KEY}': atlas_password,
+        f'extractor.atlas_search_data.{AtlasSearchDataExtractor.ATLAS_SEARCH_CHUNK_SIZE_KEY}': atlas_search_chunk_size,
+        f'extractor.atlas_search_data.{AtlasSearchDataExtractor.ATLAS_DETAILS_CHUNK_SIZE_KEY}': atlas_details_chunk_size,
+        f'extractor.atlas_search_data.{AtlasSearchDataExtractor.PROCESS_POOL_SIZE_KEY}': process_pool_size,
+        f'extractor.atlas_search_data.{AtlasSearchDataExtractor.ENTITY_TYPE_KEY}': entity_type,
+        f'loader.filesystem.elasticsearch.{FSElasticsearchJSONLoader.FILE_PATH_CONFIG_KEY}': extracted_search_data_path,
+        f'loader.filesystem.elasticsearch.{FSElasticsearchJSONLoader.FILE_MODE_CONFIG_KEY}': 'w',
+        f'publisher.elasticsearch.{ElasticsearchPublisher.FILE_PATH_CONFIG_KEY}': extracted_search_data_path,
+        f'publisher.elasticsearch.{ElasticsearchPublisher.FILE_MODE_CONFIG_KEY}': 'r',
+        f'publisher.elasticsearch.{ElasticsearchPublisher.ELASTICSEARCH_CLIENT_CONFIG_KEY}': elasticsearch_client,
+        f'publisher.elasticsearch.{ElasticsearchPublisher.ELASTICSEARCH_NEW_INDEX_CONFIG_KEY}': elasticsearch_new_index_key,
+        f'publisher.elasticsearch.{ElasticsearchPublisher.ELASTICSEARCH_DOC_TYPE_CONFIG_KEY}': elasticsearch_new_index_key_type,
+        f'publisher.elasticsearch.{ElasticsearchPublisher.ELASTICSEARCH_ALIAS_CONFIG_KEY}': elasticsearch_index_alias,
+    }
+)
 
 if __name__ == "__main__":
     task = DefaultTask(extractor=AtlasSearchDataExtractor(),

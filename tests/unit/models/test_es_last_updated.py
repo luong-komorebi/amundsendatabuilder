@@ -22,12 +22,9 @@ class TestNeo4jESLastUpdated(unittest.TestCase):
 
     def test_create_nodes(self) -> None:
         actual = []
-        node = self.es_last_updated.create_next_node()
-        while node:
+        while node := self.es_last_updated.create_next_node():
             serialized_node = neo4_serializer.serialize_node(node)
             actual.append(serialized_node)
-            node = self.es_last_updated.create_next_node()
-
         self.assertEqual(actual, self.expected_node_results)
 
     def test_create_next_relation(self) -> None:
@@ -40,10 +37,7 @@ class TestNeo4jESLastUpdated(unittest.TestCase):
         }]
 
         actual = []
-        record = self.es_last_updated.create_next_record()
-        while record:
+        while record := self.es_last_updated.create_next_record():
             serialized_record = mysql_serializer.serialize_record(record)
             actual.append(serialized_record)
-            record = self.es_last_updated.create_next_record()
-
         self.assertEqual(expected, actual)

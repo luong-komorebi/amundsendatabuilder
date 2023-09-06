@@ -130,8 +130,7 @@ def _table_search(session: Session, published_tag: str, limit: int) -> List[Dict
     table_results = []
 
     offset = 0
-    tables = _table_search_query(session, table_filter, offset, limit)
-    while tables:
+    while tables := _table_search_query(session, table_filter, offset, limit):
         for table in tables:
             schema = table.schema
             schema_description = schema.description.description if schema.description else None
@@ -171,8 +170,6 @@ def _table_search(session: Session, published_tag: str, limit: int) -> List[Dict
             table_results.append(table_result)
 
         offset += limit
-        tables = _table_search_query(session, table_filter, offset, limit)
-
     return table_results
 
 
@@ -273,8 +270,9 @@ def _dashboard_search(session: Session, published_tag: str, limit: int) -> List[
     dashboard_results = []
 
     offset = 0
-    dashboards = _dashboard_search_query(session, dashboard_filter, offset, limit)
-    while dashboards:
+    while dashboards := _dashboard_search_query(
+        session, dashboard_filter, offset, limit
+    ):
         for dashboard in dashboards:
             group = dashboard.group
             description = dashboard.description.description if dashboard.description else None
@@ -312,8 +310,6 @@ def _dashboard_search(session: Session, published_tag: str, limit: int) -> List[
             dashboard_results.append(dashboard_result)
 
         offset += limit
-        dashboards = _dashboard_search_query(session, dashboard_filter, offset, limit)
-
     return dashboard_results
 
 
@@ -408,8 +404,9 @@ def _user_search(session: Session, published_tag: str, limit: int) -> List[Dict]
     user_results = []
 
     offset = 0
-    query_results = _user_search_query(session, user_filter, offset, limit)
-    while query_results:
+    while query_results := _user_search_query(
+        session, user_filter, offset, limit
+    ):
         for query_result in query_results:
             user = query_result.User
             table_read_count = int(query_result.table_read_count) if query_result.table_read_count else 0
@@ -443,8 +440,6 @@ def _user_search(session: Session, published_tag: str, limit: int) -> List[Dict]
             user_results.append(user_result)
 
         offset += limit
-        query_results = _user_search_query(session, user_filter, offset, limit)
-
     return user_results
 
 
@@ -479,15 +474,17 @@ class MySQLSearchDataExtractor(Extractor):
         self.published_tag = conf.get_string(MySQLSearchDataExtractor.JOB_PUBLISH_TAG, '')
         self.query_limit = conf.get_int(MySQLSearchDataExtractor.QUERY_LIMIT, self._DEFAULT_QUERY_LIMIT)
 
-        connect_args = {k: v for k, v in self.conf.get_config(MySQLSearchDataExtractor.CONNECT_ARGS,
-                                                              default=ConfigTree()).items()}
+        connect_args = dict(
+            self.conf.get_config(
+                MySQLSearchDataExtractor.CONNECT_ARGS, default=ConfigTree()
+            ).items()
+        )
         self._engine = create_engine(conf.get_string(MySQLSearchDataExtractor.CONN_STRING),
                                      echo=conf.get_bool(MySQLSearchDataExtractor.ENGINE_ECHO, False),
                                      connect_args=connect_args)
         self._session_factory = sessionmaker(bind=self._engine)
 
-        model_class = conf.get(MySQLSearchDataExtractor.MODEL_CLASS, None)
-        if model_class:
+        if model_class := conf.get(MySQLSearchDataExtractor.MODEL_CLASS, None):
             module_name, class_name = model_class.rsplit(".", 1)
             mod = importlib.import_module(module_name)
             self.model_class = getattr(mod, class_name)
@@ -530,8 +527,7 @@ class MySQLSearchDataExtractor(Extractor):
 
         for result in self.results:
             if hasattr(self, 'model_class'):
-                obj = self.model_class(**result)
-                yield obj
+                yield self.model_class(**result)
             else:
                 yield result
 

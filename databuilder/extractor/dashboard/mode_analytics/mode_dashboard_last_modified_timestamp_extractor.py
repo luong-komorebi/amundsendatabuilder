@@ -57,8 +57,11 @@ class ModeDashboardLastModifiedTimestampExtractor(ModeDashboardExecutionsExtract
         url = 'https://app.mode.com/api/{organization}/spaces/{dashboard_group_id}/reports'
         json_path = '_embedded.reports[*].[token,edited_at]'
         field_names = ['dashboard_id', 'last_modified_timestamp']
-        last_modified_query = ModePaginatedRestApiQuery(query_to_join=spaces_query, url=url, params=params,
-                                                        json_path=json_path, field_names=field_names,
-                                                        skip_no_result=True)
-
-        return last_modified_query
+        return ModePaginatedRestApiQuery(
+            query_to_join=spaces_query,
+            url=url,
+            params=params,
+            json_path=json_path,
+            field_names=field_names,
+            skip_no_result=True,
+        )

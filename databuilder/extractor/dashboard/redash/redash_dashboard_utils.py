@@ -146,10 +146,10 @@ def generate_dashboard_description(text_widgets: List[RedashTextWidget],
     If all else fails, this looks like an empty dashboard.
     """
 
-    if len(text_widgets) > 0:
+    if text_widgets:
         return '\n\n'.join([w.text for w in text_widgets])
     elif len(viz_widgets) > 0:
-        query_list = '\n'.join(set([f'- {v.query_name}' for v in set(viz_widgets)]))
+        query_list = '\n'.join({f'- {v.query_name}' for v in set(viz_widgets)})
         return 'A dashboard containing the following queries:\n\n' + query_list
 
     return 'This dashboard appears to be empty!'

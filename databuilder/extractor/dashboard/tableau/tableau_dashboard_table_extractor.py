@@ -123,21 +123,19 @@ class TableauDashboardTableExtractor(Extractor):
         }"""
         self._extractor = self._build_extractor()
 
-        transformers = []
         dict_to_model_transformer = DictToModel()
         dict_to_model_transformer.init(
             conf=Scoped.get_scoped_conf(self._conf, dict_to_model_transformer.get_scope()).with_fallback(
                 ConfigFactory.from_dict(
                     {MODEL_CLASS: 'databuilder.models.dashboard.dashboard_table.DashboardTable'})))
-        transformers.append(dict_to_model_transformer)
+        transformers = [dict_to_model_transformer]
         self._transformer = ChainedTransformer(transformers=transformers)
 
     def extract(self) -> Any:
-        record = self._extractor.extract()
-        if not record:
+        if record := self._extractor.extract():
+            return next(self._transformer.transform(record=record), None)
+        else:
             return None
-
-        return next(self._transformer.transform(record=record), None)
 
     def get_scope(self) -> str:
         return 'extractor.tableau_dashboard_table'

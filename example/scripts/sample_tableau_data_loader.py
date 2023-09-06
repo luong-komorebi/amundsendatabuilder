@@ -141,10 +141,9 @@ def create_es_publisher_sample_job(elasticsearch_index_alias='table_search_index
         job_config.put(f'publisher.elasticsearch.{ElasticsearchPublisher.ELASTICSEARCH_MAPPING_CONFIG_KEY}',
                        elasticsearch_mapping)
 
-    job = DefaultJob(conf=job_config,
-                     task=task,
-                     publisher=ElasticsearchPublisher())
-    return job
+    return DefaultJob(
+        conf=job_config, task=task, publisher=ElasticsearchPublisher()
+    )
 
 
 def run_tableau_metadata_job():

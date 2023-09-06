@@ -47,15 +47,13 @@ class SchemaModel(GraphSerializable, TableSerializable):
             return None
 
     def _create_node_iterator(self) -> Iterator[GraphNode]:
-        node = GraphNode(
+        yield GraphNode(
             key=self._schema_key,
             label=SCHEMA_NODE_LABEL,
             attributes={
                 SCHEMA_NAME_ATTR: self._schema,
-            }
+            },
         )
-        yield node
-
         if self._description:
             yield self._description.get_node(self._get_description_node_key())
 
@@ -72,13 +70,9 @@ class SchemaModel(GraphSerializable, TableSerializable):
             return None
 
     def _create_record_iterator(self) -> Iterator[RDSModel]:
-        schema_record = RDSSchema(
-            rk=self._schema_key,
-            name=self._schema,
-            cluster_rk=self._cluster_key
+        yield RDSSchema(
+            rk=self._schema_key, name=self._schema, cluster_rk=self._cluster_key
         )
-        yield schema_record
-
         if self._description:
             if self._description.label == DescriptionMetadata.DESCRIPTION_NODE_LABEL:
                 yield RDSSchemaDescription(
@@ -107,9 +101,7 @@ class SchemaModel(GraphSerializable, TableSerializable):
 
     def _get_cluster_key(self, schema_key: str) -> str:
         schema_key_pattern = re.compile(SCHEMA_KEY_PATTERN_REGEX)
-        schema_key_match = schema_key_pattern.match(schema_key)
-        if not schema_key_match:
+        if schema_key_match := schema_key_pattern.match(schema_key):
+            return schema_key_match.group(1)
+        else:
             raise Exception(f'{schema_key} does not match the schema key pattern')
-
-        cluster_key = schema_key_match.group(1)
-        return cluster_key

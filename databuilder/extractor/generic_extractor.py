@@ -24,8 +24,7 @@ class GenericExtractor(Extractor):
         self.conf = conf
         self.values: Iterable[Any] = conf.get(GenericExtractor.EXTRACTION_ITEMS)
 
-        model_class = conf.get('model_class', None)
-        if model_class:
+        if model_class := conf.get('model_class', None):
             module_name, class_name = model_class.rsplit(".", 1)
             mod = importlib.import_module(module_name)
             self.model_class = getattr(mod, class_name)
@@ -43,8 +42,7 @@ class GenericExtractor(Extractor):
         :return:
         """
         try:
-            result = next(self._iter)
-            return result
+            return next(self._iter)
         except StopIteration:
             return None
 

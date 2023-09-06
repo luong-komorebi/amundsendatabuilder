@@ -139,17 +139,13 @@ class DashboardMetadata(GraphSerializable, TableSerializable):
 
     def _create_next_node(self) -> Iterator[GraphNode]:
         # Cluster node
-        if not self._get_cluster_key() in self._processed_cluster:
+        if self._get_cluster_key() not in self._processed_cluster:
             self._processed_cluster.add(self._get_cluster_key())
-            cluster_node = GraphNode(
+            yield GraphNode(
                 key=self._get_cluster_key(),
                 label=cluster_constants.CLUSTER_NODE_LABEL,
-                attributes={
-                    cluster_constants.CLUSTER_NAME_PROP_KEY: self.cluster
-                }
+                attributes={cluster_constants.CLUSTER_NAME_PROP_KEY: self.cluster},
             )
-            yield cluster_node
-
         # Dashboard node attributes
         dashboard_node_attributes: Dict[str, Any] = {
             DashboardMetadata.DASHBOARD_NAME: self.dashboard_name,
@@ -160,16 +156,17 @@ class DashboardMetadata(GraphSerializable, TableSerializable):
         if self.dashboard_url:
             dashboard_node_attributes[DashboardMetadata.DASHBOARD_URL] = self.dashboard_url
 
-        dashboard_node = GraphNode(
+        yield GraphNode(
             key=self._get_dashboard_key(),
             label=DashboardMetadata.DASHBOARD_NODE_LABEL,
-            attributes=dashboard_node_attributes
+            attributes=dashboard_node_attributes,
         )
-
-        yield dashboard_node
-
         # Dashboard group
-        if self.dashboard_group and not self._get_dashboard_group_key() in self._processed_dashboard_group:
+        if (
+            self.dashboard_group
+            and self._get_dashboard_group_key()
+            not in self._processed_dashboard_group
+        ):
             self._processed_dashboard_group.add(self._get_dashboard_group_key())
             dashboard_group_node_attributes = {
                 DashboardMetadata.DASHBOARD_NAME: self.dashboard_group,
@@ -178,47 +175,37 @@ class DashboardMetadata(GraphSerializable, TableSerializable):
             if self.dashboard_group_url:
                 dashboard_group_node_attributes[DashboardMetadata.DASHBOARD_GROUP_URL] = self.dashboard_group_url
 
-            dashboard_group_node = GraphNode(
+            yield GraphNode(
                 key=self._get_dashboard_group_key(),
                 label=DashboardMetadata.DASHBOARD_GROUP_NODE_LABEL,
-                attributes=dashboard_group_node_attributes
+                attributes=dashboard_group_node_attributes,
             )
-
-            yield dashboard_group_node
-
         # Dashboard group description
         if self.dashboard_group_description:
-            dashboard_group_description_node = GraphNode(
+            yield GraphNode(
                 key=self._get_dashboard_group_description_key(),
                 label=DashboardMetadata.DASHBOARD_DESCRIPTION_NODE_LABEL,
                 attributes={
                     DashboardMetadata.DASHBOARD_DESCRIPTION: self.dashboard_group_description
-                }
+                },
             )
-            yield dashboard_group_description_node
-
         # Dashboard description node
         if self.description:
-            dashboard_description_node = GraphNode(
+            yield GraphNode(
                 key=self._get_dashboard_description_key(),
                 label=DashboardMetadata.DASHBOARD_DESCRIPTION_NODE_LABEL,
                 attributes={
                     DashboardMetadata.DASHBOARD_DESCRIPTION: self.description
-                }
+                },
             )
-            yield dashboard_description_node
-
         # Dashboard tag node
         if self.tags:
             for tag in self.tags:
-                dashboard_tag_node = GraphNode(
+                yield GraphNode(
                     key=TagMetadata.get_tag_key(tag),
                     label=TagMetadata.TAG_NODE_LABEL,
-                    attributes={
-                        TagMetadata.TAG_TYPE: 'dashboard'
-                    }
+                    attributes={TagMetadata.TAG_TYPE: 'dashboard'},
                 )
-                yield dashboard_tag_node
 
     def create_next_relation(self) -> Union[GraphRelationship, None]:
         try:
@@ -227,69 +214,58 @@ class DashboardMetadata(GraphSerializable, TableSerializable):
             return None
 
     def _create_next_relation(self) -> Iterator[GraphRelationship]:
-        # Cluster <-> Dashboard group
-        cluster_dashboard_group_relationship = GraphRelationship(
+        yield GraphRelationship(
             start_label=cluster_constants.CLUSTER_NODE_LABEL,
             start_key=self._get_cluster_key(),
             end_label=DashboardMetadata.DASHBOARD_GROUP_NODE_LABEL,
             end_key=self._get_dashboard_group_key(),
             type=DashboardMetadata.CLUSTER_DASHBOARD_GROUP_RELATION_TYPE,
             reverse_type=DashboardMetadata.DASHBOARD_GROUP_CLUSTER_RELATION_TYPE,
-            attributes={}
+            attributes={},
         )
-        yield cluster_dashboard_group_relationship
-
         # Dashboard group > Dashboard group description relation
         if self.dashboard_group_description:
-            dashboard_group_description_relationship = GraphRelationship(
+            yield GraphRelationship(
                 start_label=DashboardMetadata.DASHBOARD_GROUP_NODE_LABEL,
                 start_key=self._get_dashboard_group_key(),
                 end_label=DashboardMetadata.DASHBOARD_DESCRIPTION_NODE_LABEL,
                 end_key=self._get_dashboard_group_description_key(),
                 type=DashboardMetadata.DASHBOARD_DESCRIPTION_RELATION_TYPE,
                 reverse_type=DashboardMetadata.DESCRIPTION_DASHBOARD_RELATION_TYPE,
-                attributes={}
+                attributes={},
             )
-            yield dashboard_group_description_relationship
-
-        # Dashboard group > Dashboard relation
-        dashboard_group_dashboard_relationship = GraphRelationship(
+        yield GraphRelationship(
             start_label=DashboardMetadata.DASHBOARD_NODE_LABEL,
             end_label=DashboardMetadata.DASHBOARD_GROUP_NODE_LABEL,
             start_key=self._get_dashboard_key(),
             end_key=self._get_dashboard_group_key(),
             type=DashboardMetadata.DASHBOARD_DASHBOARD_GROUP_RELATION_TYPE,
             reverse_type=DashboardMetadata.DASHBOARD_GROUP_DASHBOARD_RELATION_TYPE,
-            attributes={}
+            attributes={},
         )
-        yield dashboard_group_dashboard_relationship
-
         # Dashboard > Dashboard description relation
         if self.description:
-            dashboard_description_relationship = GraphRelationship(
+            yield GraphRelationship(
                 start_label=DashboardMetadata.DASHBOARD_NODE_LABEL,
                 end_label=DashboardMetadata.DASHBOARD_DESCRIPTION_NODE_LABEL,
                 start_key=self._get_dashboard_key(),
                 end_key=self._get_dashboard_description_key(),
                 type=DashboardMetadata.DASHBOARD_DESCRIPTION_RELATION_TYPE,
                 reverse_type=DashboardMetadata.DESCRIPTION_DASHBOARD_RELATION_TYPE,
-                attributes={}
+                attributes={},
             )
-            yield dashboard_description_relationship
-
         # Dashboard > Dashboard tag relation
         if self.tags:
             for tag in self.tags:
-                dashboard_tag_relationship = GraphRelationship(
+                yield GraphRelationship(
                     start_label=DashboardMetadata.DASHBOARD_NODE_LABEL,
                     end_label=TagMetadata.TAG_NODE_LABEL,
                     start_key=self._get_dashboard_key(),
                     end_key=TagMetadata.get_tag_key(tag),
                     type=DashboardMetadata.DASHBOARD_TAG_RELATION_TYPE,
                     reverse_type=DashboardMetadata.TAG_DASHBOARD_RELATION_TYPE,
-                    attributes={}
+                    attributes={},
                 )
-                yield dashboard_tag_relationship
 
     def create_next_record(self) -> Union[RDSModel, None]:
         try:
@@ -299,7 +275,7 @@ class DashboardMetadata(GraphSerializable, TableSerializable):
 
     def _create_record_iterator(self) -> Iterator[RDSModel]:
         # Cluster
-        if not self._get_cluster_key() in self._processed_cluster:
+        if self._get_cluster_key() not in self._processed_cluster:
             self._processed_cluster.add(self._get_cluster_key())
             yield RDSDashboardCluster(
                 rk=self._get_cluster_key(),
@@ -307,7 +283,11 @@ class DashboardMetadata(GraphSerializable, TableSerializable):
             )
 
         # Dashboard group
-        if self.dashboard_group and not self._get_dashboard_group_key() in self._processed_dashboard_group:
+        if (
+            self.dashboard_group
+            and self._get_dashboard_group_key()
+            not in self._processed_dashboard_group
+        ):
             self._processed_dashboard_group.add(self._get_dashboard_group_key())
             dashboard_group_record = RDSDashboardGroup(
                 rk=self._get_dashboard_group_key(),
@@ -352,14 +332,11 @@ class DashboardMetadata(GraphSerializable, TableSerializable):
         # Dashboard tag
         if self.tags:
             for tag in self.tags:
-                tag_record = RDSTag(
+                yield RDSTag(
                     rk=TagMetadata.get_tag_key(tag),
                     tag_type='dashboard',
                 )
-                yield tag_record
-
-                dashboard_tag_record = RDSDashboardTag(
+                yield RDSDashboardTag(
                     dashboard_rk=self._get_dashboard_key(),
-                    tag_rk=TagMetadata.get_tag_key(tag)
+                    tag_rk=TagMetadata.get_tag_key(tag),
                 )
-                yield dashboard_tag_record

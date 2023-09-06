@@ -59,12 +59,9 @@ class TestUser(unittest.TestCase):
         }]
 
         actual = []
-        node = self.user.create_next_node()
-        while node:
+        while node := self.user.create_next_node():
             serialized_node = neo4_serializer.serialize_node(node)
             actual.append(serialized_node)
-            node = self.user.create_next_node()
-
         self.assertEqual(actual, expected_nodes)
 
     def test_create_node_additional_attr(self) -> None:
@@ -128,12 +125,9 @@ class TestUser(unittest.TestCase):
 
     def test_create_relation(self) -> None:
         actual = []
-        relation = self.user.create_next_relation()
-        while relation:
+        while relation := self.user.create_next_relation():
             serialized_relation = neo4_serializer.serialize_relationship(relation)
             actual.append(serialized_relation)
-            relation = self.user.create_next_relation()
-
         start_key = 'test@email.com'
         end_key = 'test_manager@email.com'
 
@@ -150,12 +144,9 @@ class TestUser(unittest.TestCase):
 
     def test_create_relation_neptune(self) -> None:
         actual = []
-        relation = self.user.create_next_relation()
-        while relation:
+        while relation := self.user.create_next_relation():
             serialized = neptune_serializer.convert_relationship(relation)
             actual.append(serialized)
-            relation = self.user.create_next_relation()
-
         start_key = 'User:{email}'.format(email='test@email.com')
         end_key = 'User:{email}'.format(email='test_manager@email.com')
 

@@ -5,6 +5,7 @@
 This is a example script which demo how to load data into neo4j without using Airflow DAG.
 """
 
+
 import logging
 import os
 import sys
@@ -38,20 +39,15 @@ NEO4J_ENDPOINT = f'bolt://{os.getenv("NEO4J_HOST", "localhost")}:7687'
 NEO4J_USER = 'neo4j'
 NEO4J_PASSWORD = 'test'
 
-es_host = None
-neo_host = None
-if len(sys.argv) > 1:
-    es_host = sys.argv[1]
-if len(sys.argv) > 2:
-    neo_host = sys.argv[2]
-
+es_host = sys.argv[1] if len(sys.argv) > 1 else None
+neo_host = sys.argv[2] if len(sys.argv) > 2 else None
 es = Elasticsearch([
     {'host': es_host if es_host else 'localhost'},
 ])
 
 
 def create_sample_dremio_job():
-    tmp_folder = f'/var/tmp/amundsen/{"tables"}'
+    tmp_folder = '/var/tmp/amundsen/tables'
     node_files_folder = f'{tmp_folder}/nodes'
     relationship_files_folder = f'{tmp_folder}/relationships'
 
@@ -78,11 +74,9 @@ def create_sample_dremio_job():
         f'publisher.neo4j.{neo4j_csv_publisher.JOB_PUBLISH_TAG}': 'unique_tag'
     })
 
-    job = DefaultJob(conf=job_config,
-                     task=task,
-                     publisher=Neo4jCsvPublisher())
-
-    return job
+    return DefaultJob(
+        conf=job_config, task=task, publisher=Neo4jCsvPublisher()
+    )
 
 
 def create_es_publisher_sample_job(elasticsearch_index_alias='table_search_index',
@@ -111,7 +105,7 @@ def create_es_publisher_sample_job(elasticsearch_index_alias='table_search_index
     # elastic search client instance
     elasticsearch_client = es
     # unique name of new index in Elasticsearch
-    elasticsearch_new_index_key = 'tables' + str(uuid.uuid4())
+    elasticsearch_new_index_key = f'tables{str(uuid.uuid4())}'
 
     job_config = ConfigFactory.from_dict({
         f'extractor.search_data.extractor.neo4j.{Neo4jExtractor.GRAPH_URL_CONFIG_KEY}': NEO4J_ENDPOINT,
@@ -140,10 +134,9 @@ def create_es_publisher_sample_job(elasticsearch_index_alias='table_search_index
         job_config.put(f'publisher.elasticsearch.{ElasticsearchPublisher.ELASTICSEARCH_MAPPING_CONFIG_KEY}',
                        elasticsearch_mapping)
 
-    job = DefaultJob(conf=job_config,
-                     task=task,
-                     publisher=ElasticsearchPublisher())
-    return job
+    return DefaultJob(
+        conf=job_config, task=task, publisher=ElasticsearchPublisher()
+    )
 
 
 if __name__ == "__main__":

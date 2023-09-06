@@ -31,8 +31,7 @@ neo4j_password = 'test'
 
 def create_connection(db_file):
     try:
-        conn = sqlite3.connect(db_file)
-        return conn
+        return sqlite3.connect(db_file)
     except Exception:
         logging.exception('exception')
     return None
@@ -63,10 +62,9 @@ def create_bq_job(metadata_type, gcloud_project):
         f'publisher.neo4j.{neo4j_csv_publisher.NEO4J_PASSWORD}': neo4j_password,
         f'publisher.neo4j.{neo4j_csv_publisher.JOB_PUBLISH_TAG}': 'unique_tag',  # should use unique tag here like {ds}
     })
-    job = DefaultJob(conf=job_config,
-                     task=task,
-                     publisher=Neo4jCsvPublisher())
-    return job
+    return DefaultJob(
+        conf=job_config, task=task, publisher=Neo4jCsvPublisher()
+    )
 
 
 if __name__ == "__main__":
