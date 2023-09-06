@@ -334,13 +334,16 @@ class Neo4jCsvPublisher(Publisher):
                                                      expect_result=self._confirm_rel_created)
                         exception_exists = False
                     except TransientError as e:
-                        if rel_record[RELATION_START_LABEL] in self.deadlock_node_labels \
-                                or rel_record[RELATION_END_LABEL] in self.deadlock_node_labels:
-                            time.sleep(SLEEP_TIME)
-                            retries_for_exception -= 1
-                        else:
+                        if (
+                            rel_record[RELATION_START_LABEL]
+                            not in self.deadlock_node_labels
+                            and rel_record[RELATION_END_LABEL]
+                            not in self.deadlock_node_labels
+                        ):
                             raise e
 
+                        time.sleep(SLEEP_TIME)
+                        retries_for_exception -= 1
         return tx
 
     def create_relationship_merge_statement(self, rel_record: dict) -> str:
@@ -404,9 +407,12 @@ class Neo4jCsvPublisher(Publisher):
 
             props.append(f'{identifier}.{k} = ${k}')
 
-        props.append(f"{identifier}.{PUBLISHED_TAG_PROPERTY_NAME} = '{self.publish_tag}'")
-        props.append(f"{identifier}.{LAST_UPDATED_EPOCH_MS} = timestamp()")
-
+        props.extend(
+            (
+                f"{identifier}.{PUBLISHED_TAG_PROPERTY_NAME} = '{self.publish_tag}'",
+                f"{identifier}.{LAST_UPDATED_EPOCH_MS} = timestamp()",
+            )
+        )
         return ', '.join(props)
 
     def _execute_statement(self,
@@ -426,7 +432,7 @@ class Neo4jCsvPublisher(Publisher):
         try:
             LOGGER.debug('Executing statement: %s with params %s', stmt, params)
 
-            result = tx.run(str(stmt).encode('utf-8', 'ignore'), parameters=params)
+            result = tx.run(stmt.encode('utf-8', 'ignore'), parameters=params)
             if expect_result and not result.single():
                 raise RuntimeError(f'Failed to executed statement: {stmt}')
 
@@ -457,7 +463,9 @@ class Neo4jCsvPublisher(Publisher):
             CREATE CONSTRAINT ON (node:{{ LABEL }}) ASSERT node.key IS UNIQUE
         """).render(LABEL=label)
 
-        LOGGER.info(f'Trying to create index for label %s if not exist: %s', label, stmt)
+        LOGGER.info(
+            'Trying to create index for label %s if not exist: %s', label, stmt
+        )
         with self._driver.session() as session:
             try:
                 session.run(stmt)

@@ -54,10 +54,7 @@ class ModeDashboardExecutionsExtractor(Extractor):
 
     def extract(self) -> Any:
         record = self._extractor.extract()
-        if not record:
-            return None
-
-        return self._transformer.transform(record=record)
+        return None if not record else self._transformer.transform(record=record)
 
     def get_scope(self) -> str:
         return 'extractor.mode_dashboard_execution'
@@ -86,7 +83,11 @@ class ModeDashboardExecutionsExtractor(Extractor):
         url = 'https://app.mode.com{last_run_resource_path}'
         json_path = '[state,completed_at]'
         field_names = ['execution_state', 'execution_timestamp']
-        last_run_state_query = RestApiQuery(query_to_join=last_run_resource_path_query, url=url, params=params,
-                                            json_path=json_path, field_names=field_names, skip_no_result=True)
-
-        return last_run_state_query
+        return RestApiQuery(
+            query_to_join=last_run_resource_path_query,
+            url=url,
+            params=params,
+            json_path=json_path,
+            field_names=field_names,
+            skip_no_result=True,
+        )

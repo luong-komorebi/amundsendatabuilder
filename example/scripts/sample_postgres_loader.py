@@ -7,6 +7,7 @@ into Neo4j and Elasticsearch without using an Airflow DAG.
 
 """
 
+
 import logging
 import sys
 import textwrap
@@ -29,13 +30,8 @@ from databuilder.publisher.neo4j_csv_publisher import Neo4jCsvPublisher
 from databuilder.task.task import DefaultTask
 from databuilder.transformer.base_transformer import NoopTransformer
 
-es_host = None
-neo_host = None
-if len(sys.argv) > 1:
-    es_host = sys.argv[1]
-if len(sys.argv) > 2:
-    neo_host = sys.argv[2]
-
+es_host = sys.argv[1] if len(sys.argv) > 1 else None
+neo_host = sys.argv[2] if len(sys.argv) > 2 else None
 es = Elasticsearch([
     {'host': es_host if es_host else 'localhost'},
 ])
@@ -60,7 +56,7 @@ def connection_string():
     host = 'localhost'
     port = '5432'
     db = 'postgres'
-    return "postgresql://%s@%s:%s/%s" % (user, host, port, db)
+    return f"postgresql://{user}@{host}:{port}/{db}"
 
 
 def run_postgres_job():
@@ -86,10 +82,13 @@ def run_postgres_job():
         f'publisher.neo4j.{neo4j_csv_publisher.NEO4J_PASSWORD}': neo4j_password,
         f'publisher.neo4j.{neo4j_csv_publisher.JOB_PUBLISH_TAG}': 'unique_tag',  # should use unique tag here like {ds}
     })
-    job = DefaultJob(conf=job_config,
-                     task=DefaultTask(extractor=PostgresMetadataExtractor(), loader=FsNeo4jCSVLoader()),
-                     publisher=Neo4jCsvPublisher())
-    return job
+    return DefaultJob(
+        conf=job_config,
+        task=DefaultTask(
+            extractor=PostgresMetadataExtractor(), loader=FsNeo4jCSVLoader()
+        ),
+        publisher=Neo4jCsvPublisher(),
+    )
 
 
 def create_es_publisher_sample_job(elasticsearch_index_alias='table_search_index',
@@ -118,7 +117,7 @@ def create_es_publisher_sample_job(elasticsearch_index_alias='table_search_index
     # elastic search client instance
     elasticsearch_client = es
     # unique name of new index in Elasticsearch
-    elasticsearch_new_index_key = 'tables' + str(uuid.uuid4())
+    elasticsearch_new_index_key = f'tables{str(uuid.uuid4())}'
 
     job_config = ConfigFactory.from_dict({
         f'extractor.search_data.extractor.neo4j.{Neo4jExtractor.GRAPH_URL_CONFIG_KEY}': neo4j_endpoint,
@@ -147,10 +146,9 @@ def create_es_publisher_sample_job(elasticsearch_index_alias='table_search_index
         job_config.put(f'publisher.elasticsearch.{ElasticsearchPublisher.ELASTICSEARCH_MAPPING_CONFIG_KEY}',
                        elasticsearch_mapping)
 
-    job = DefaultJob(conf=job_config,
-                     task=task,
-                     publisher=ElasticsearchPublisher())
-    return job
+    return DefaultJob(
+        conf=job_config, task=task, publisher=ElasticsearchPublisher()
+    )
 
 
 if __name__ == "__main__":

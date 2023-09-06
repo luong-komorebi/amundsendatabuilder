@@ -62,26 +62,19 @@ class TagMetadata(GraphSerializable, TableSerializable):
 
     @staticmethod
     def get_tag_key(name: str) -> str:
-        if not name:
-            return ''
-        return TagMetadata.TAG_KEY_FORMAT.format(tag=name)
+        return '' if not name else TagMetadata.TAG_KEY_FORMAT.format(tag=name)
 
     def get_node(self) -> GraphNode:
-        node = GraphNode(
+        return GraphNode(
             key=TagMetadata.get_tag_key(self._name),
             label=TagMetadata.TAG_NODE_LABEL,
-            attributes={
-                TagMetadata.TAG_TYPE: self._tag_type
-            }
+            attributes={TagMetadata.TAG_TYPE: self._tag_type},
         )
-        return node
 
     def get_record(self) -> RDSModel:
-        record = RDSTag(
-            rk=TagMetadata.get_tag_key(self._name),
-            tag_type=self._tag_type
+        return RDSTag(
+            rk=TagMetadata.get_tag_key(self._name), tag_type=self._tag_type
         )
-        return record
 
     def create_next_node(self) -> Optional[GraphNode]:
         # return the string representation of the data
@@ -104,16 +97,13 @@ class TagMetadata(GraphSerializable, TableSerializable):
             return None
 
     def _create_node_iterator(self) -> Iterator[GraphNode]:
-        node = self.get_node()
-        yield node
+        yield self.get_node()
 
     def _create_relation_iterator(self) -> Iterator[GraphRelationship]:
         return
-        yield
 
     def _create_record_iterator(self) -> Iterator[RDSModel]:
-        record = self.get_record()
-        yield record
+        yield self.get_record()
 
 
 # TODO: this should inherit from ProgrammaticDescription in amundsen-common
@@ -166,48 +156,47 @@ class DescriptionMetadata(GraphSerializable):
         # We do not want to create a node if there is no description text!
         if text is None:
             return None
-        description_node = DescriptionMetadata(text=text,
-                                               source=source or DescriptionMetadata.DEFAULT_SOURCE,
-                                               description_key=description_key,
-                                               start_label=start_label,
-                                               start_key=start_key)
-        return description_node
+        return DescriptionMetadata(
+            text=text,
+            source=source or DescriptionMetadata.DEFAULT_SOURCE,
+            description_key=description_key,
+            start_label=start_label,
+            start_key=start_key,
+        )
 
     def get_description_id(self) -> str:
         if self.source == self.DEFAULT_SOURCE:
             return "_description"
         else:
-            return "_" + self.source + "_description"
+            return f"_{self.source}_description"
 
     def get_description_default_key(self, start_key: Optional[str]) -> Optional[str]:
         return f'{start_key}/{self.get_description_id()}' if start_key else None
 
     def get_node(self, node_key: str) -> GraphNode:
-        node = GraphNode(
+        return GraphNode(
             key=node_key,
             label=self.label,
             attributes={
                 DescriptionMetadata.DESCRIPTION_SOURCE: self.source,
-                DescriptionMetadata.DESCRIPTION_TEXT: self.text
-            }
+                DescriptionMetadata.DESCRIPTION_TEXT: self.text,
+            },
         )
-        return node
 
     def get_relation(self,
                      start_node: str,
                      start_key: str,
                      end_key: str,
                      ) -> GraphRelationship:
-        relationship = GraphRelationship(
+        return GraphRelationship(
             start_label=start_node,
             start_key=start_key,
             end_label=self.label,
             end_key=end_key,
             type=DescriptionMetadata.DESCRIPTION_RELATION_TYPE,
             reverse_type=DescriptionMetadata.INVERSE_DESCRIPTION_RELATION_TYPE,
-            attributes={}
+            attributes={},
         )
-        return relationship
 
     def create_next_node(self) -> Optional[GraphNode]:
         # return the string representation of the data
@@ -434,21 +423,17 @@ class TableMetadata(GraphSerializable, TableSerializable):
         # Create the table tag nodes
         if self.tags:
             for tag in self.tags:
-                tag_node = TagMetadata(tag).get_node()
-                yield tag_node
-
+                yield TagMetadata(tag).get_node()
         for col in self.columns:
-            column_node = GraphNode(
+            yield GraphNode(
                 key=self._get_col_key(col),
                 label=ColumnMetadata.COLUMN_NODE_LABEL,
                 attributes={
                     ColumnMetadata.COLUMN_NAME: col.name,
                     ColumnMetadata.COLUMN_TYPE: col.type,
-                    ColumnMetadata.COLUMN_ORDER: col.sort_order
-                }
+                    ColumnMetadata.COLUMN_ORDER: col.sort_order,
+                },
             )
-            yield column_node
-
             if col.description:
                 node_key = self._get_col_description_key(col, col.description)
                 yield col.description.get_node(node_key)
@@ -458,10 +443,7 @@ class TableMetadata(GraphSerializable, TableSerializable):
                     start_label=ColumnMetadata.COLUMN_NODE_LABEL,
                     start_key=self._get_col_key(col),
                     badges=col.badges)
-                badge_nodes = col_badge_metadata.get_badge_nodes()
-                for node in badge_nodes:
-                    yield node
-
+                yield from col_badge_metadata.get_badge_nodes()
         # Database, cluster, schema
         others = [
             GraphNode(
@@ -515,17 +497,15 @@ class TableMetadata(GraphSerializable, TableSerializable):
             return None
 
     def _create_next_relation(self) -> Iterator[GraphRelationship]:
-        schema_table_relationship = GraphRelationship(
+        yield GraphRelationship(
             start_key=self._get_schema_key(),
             start_label=TableMetadata.SCHEMA_NODE_LABEL,
             end_key=self._get_table_key(),
             end_label=TableMetadata.TABLE_NODE_LABEL,
             type=TableMetadata.SCHEMA_TABLE_RELATION_TYPE,
             reverse_type=TableMetadata.TABLE_SCHEMA_RELATION_TYPE,
-            attributes={}
+            attributes={},
         )
-        yield schema_table_relationship
-
         if self.description:
             yield self.description.get_relation(TableMetadata.TABLE_NODE_LABEL,
                                                 self._get_table_key(),
@@ -533,29 +513,25 @@ class TableMetadata(GraphSerializable, TableSerializable):
 
         if self.tags:
             for tag in self.tags:
-                tag_relationship = GraphRelationship(
+                yield GraphRelationship(
                     start_label=TableMetadata.TABLE_NODE_LABEL,
                     start_key=self._get_table_key(),
                     end_label=TagMetadata.TAG_NODE_LABEL,
                     end_key=TagMetadata.get_tag_key(tag),
                     type=TableMetadata.TABLE_TAG_RELATION_TYPE,
                     reverse_type=TableMetadata.TAG_TABLE_RELATION_TYPE,
-                    attributes={}
+                    attributes={},
                 )
-                yield tag_relationship
-
         for col in self.columns:
-            column_relationship = GraphRelationship(
+            yield GraphRelationship(
                 start_label=TableMetadata.TABLE_NODE_LABEL,
                 start_key=self._get_table_key(),
                 end_label=ColumnMetadata.COLUMN_NODE_LABEL,
                 end_key=self._get_col_key(col),
                 type=TableMetadata.TABLE_COL_RELATION_TYPE,
                 reverse_type=TableMetadata.COL_TABLE_RELATION_TYPE,
-                attributes={}
+                attributes={},
             )
-            yield column_relationship
-
             if col.description:
                 yield col.description.get_relation(
                     ColumnMetadata.COLUMN_NODE_LABEL,
@@ -567,10 +543,7 @@ class TableMetadata(GraphSerializable, TableSerializable):
                 badge_metadata = BadgeMetadata(start_label=ColumnMetadata.COLUMN_NODE_LABEL,
                                                start_key=self._get_col_key(col),
                                                badges=col.badges)
-                badge_relations = badge_metadata.get_badge_relations()
-                for relation in badge_relations:
-                    yield relation
-
+                yield from badge_metadata.get_badge_relations()
         others = [
             GraphRelationship(
                 start_label=TableMetadata.DATABASE_NODE_LABEL,
@@ -655,15 +628,10 @@ class TableMetadata(GraphSerializable, TableSerializable):
 
         # Tag
         for tag in self.tags:
-            tag_record = TagMetadata(tag).get_record()
-            yield tag_record
-
-            table_tag_record = RDSTableTag(
-                table_rk=self._get_table_key(),
-                tag_rk=TagMetadata.get_tag_key(tag)
+            yield TagMetadata(tag).get_record()
+            yield RDSTableTag(
+                table_rk=self._get_table_key(), tag_rk=TagMetadata.get_tag_key(tag)
             )
-            yield table_tag_record
-
         # Column
         for col in self.columns:
             yield RDSTableColumn(
@@ -694,8 +662,6 @@ class TableMetadata(GraphSerializable, TableSerializable):
                 for badge_record in badge_records:
                     yield badge_record
 
-                    column_badge_record = RDSColumnBadge(
-                        column_rk=self._get_col_key(col),
-                        badge_rk=badge_record.rk
+                    yield RDSColumnBadge(
+                        column_rk=self._get_col_key(col), badge_rk=badge_record.rk
                     )
-                    yield column_badge_record

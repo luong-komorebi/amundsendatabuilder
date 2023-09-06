@@ -56,12 +56,9 @@ class TestTableSource(unittest.TestCase):
         }]
 
         actual = []
-        node = self.table_source.create_next_node()
-        while node:
+        while node := self.table_source.create_next_node():
             serialized_node = neo4_serializer.serialize_node(node)
             actual.append(serialized_node)
-            node = self.table_source.create_next_node()
-
         self.assertEqual(expected_nodes, actual)
 
     def test_create_relation(self) -> None:
@@ -75,58 +72,52 @@ class TestTableSource(unittest.TestCase):
         }]
 
         actual = []
-        relation = self.table_source.create_next_relation()
-        while relation:
+        while relation := self.table_source.create_next_relation():
             serialized_relation = neo4_serializer.serialize_relationship(relation)
             actual.append(serialized_relation)
-            relation = self.table_source.create_next_relation()
-
         self.assertEqual(expected_relations, actual)
 
     def test_create_relation_neptune(self) -> None:
         actual = []
-        relation = self.table_source.create_next_relation()
-        while relation:
+        while relation := self.table_source.create_next_relation():
             serialized_relation = neptune_serializer.convert_relationship(relation)
             actual.append(serialized_relation)
-            relation = self.table_source.create_next_relation()
-
         expected = [
             [
                 {
                     NEPTUNE_HEADER_ID: "{label}:{from_vertex_id}_{to_vertex_id}".format(
-                        from_vertex_id="Source:" + self.start_key,
-                        to_vertex_id="Table:" + self.end_key,
-                        label=TableSource.SOURCE_TABLE_RELATION_TYPE
+                        from_vertex_id=f"Source:{self.start_key}",
+                        to_vertex_id=f"Table:{self.end_key}",
+                        label=TableSource.SOURCE_TABLE_RELATION_TYPE,
                     ),
                     METADATA_KEY_PROPERTY_NAME_BULK_LOADER_FORMAT: "{label}:{from_vertex_id}_{to_vertex_id}".format(
-                        from_vertex_id="Source:" + self.start_key,
-                        to_vertex_id="Table:" + self.end_key,
-                        label=TableSource.SOURCE_TABLE_RELATION_TYPE
+                        from_vertex_id=f"Source:{self.start_key}",
+                        to_vertex_id=f"Table:{self.end_key}",
+                        label=TableSource.SOURCE_TABLE_RELATION_TYPE,
                     ),
-                    NEPTUNE_RELATIONSHIP_HEADER_FROM: "Source:" + self.start_key,
-                    NEPTUNE_RELATIONSHIP_HEADER_TO: "Table:" + self.end_key,
+                    NEPTUNE_RELATIONSHIP_HEADER_FROM: f"Source:{self.start_key}",
+                    NEPTUNE_RELATIONSHIP_HEADER_TO: f"Table:{self.end_key}",
                     NEPTUNE_HEADER_LABEL: TableSource.SOURCE_TABLE_RELATION_TYPE,
                     NEPTUNE_LAST_EXTRACTED_AT_RELATIONSHIP_PROPERTY_NAME_BULK_LOADER_FORMAT: ANY,
-                    NEPTUNE_CREATION_TYPE_RELATIONSHIP_PROPERTY_NAME_BULK_LOADER_FORMAT: NEPTUNE_CREATION_TYPE_JOB
+                    NEPTUNE_CREATION_TYPE_RELATIONSHIP_PROPERTY_NAME_BULK_LOADER_FORMAT: NEPTUNE_CREATION_TYPE_JOB,
                 },
                 {
                     NEPTUNE_HEADER_ID: "{label}:{from_vertex_id}_{to_vertex_id}".format(
-                        from_vertex_id="Table:" + self.end_key,
-                        to_vertex_id="Source:" + self.start_key,
-                        label=TableSource.TABLE_SOURCE_RELATION_TYPE
+                        from_vertex_id=f"Table:{self.end_key}",
+                        to_vertex_id=f"Source:{self.start_key}",
+                        label=TableSource.TABLE_SOURCE_RELATION_TYPE,
                     ),
                     METADATA_KEY_PROPERTY_NAME_BULK_LOADER_FORMAT: "{label}:{from_vertex_id}_{to_vertex_id}".format(
-                        from_vertex_id="Table:" + self.end_key,
-                        to_vertex_id="Source:" + self.start_key,
-                        label=TableSource.TABLE_SOURCE_RELATION_TYPE
+                        from_vertex_id=f"Table:{self.end_key}",
+                        to_vertex_id=f"Source:{self.start_key}",
+                        label=TableSource.TABLE_SOURCE_RELATION_TYPE,
                     ),
-                    NEPTUNE_RELATIONSHIP_HEADER_FROM: "Table:" + self.end_key,
-                    NEPTUNE_RELATIONSHIP_HEADER_TO: "Source:" + self.start_key,
+                    NEPTUNE_RELATIONSHIP_HEADER_FROM: f"Table:{self.end_key}",
+                    NEPTUNE_RELATIONSHIP_HEADER_TO: f"Source:{self.start_key}",
                     NEPTUNE_HEADER_LABEL: TableSource.TABLE_SOURCE_RELATION_TYPE,
                     NEPTUNE_LAST_EXTRACTED_AT_RELATIONSHIP_PROPERTY_NAME_BULK_LOADER_FORMAT: ANY,
-                    NEPTUNE_CREATION_TYPE_RELATIONSHIP_PROPERTY_NAME_BULK_LOADER_FORMAT: NEPTUNE_CREATION_TYPE_JOB
-                }
+                    NEPTUNE_CREATION_TYPE_RELATIONSHIP_PROPERTY_NAME_BULK_LOADER_FORMAT: NEPTUNE_CREATION_TYPE_JOB,
+                },
             ]
         ]
 
@@ -141,10 +132,7 @@ class TestTableSource(unittest.TestCase):
         }]
 
         actual = []
-        record = self.table_source.create_next_record()
-        while record:
+        while record := self.table_source.create_next_record():
             serialized_record = mysql_serializer.serialize_record(record)
             actual.append(serialized_record)
-            record = self.table_source.create_next_record()
-
         self.assertEqual(expected, actual)

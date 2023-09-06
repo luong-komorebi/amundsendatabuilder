@@ -242,7 +242,7 @@ class RestApiQuery(BaseRestApiQuery):
             return [result_list[i:i + len(field_names)] for i in range(0, len(result_list), len(field_names))]
 
         result = []
-        num_subresult = int(len(result_list) / len(field_names))
+        num_subresult = len(result_list) // len(field_names)
         for i in range(num_subresult):
             sub_result = [result_list[j] for j in range(i, len(result_list), num_subresult)]
             result.append(sub_result)

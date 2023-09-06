@@ -69,9 +69,12 @@ class ModeDashboardOwnerExtractor(Extractor):
         json_path = 'email'
         field_names = ['email']
         failure_handler = HttpFailureSkipOnStatus(status_codes_to_skip={404})
-        owner_email_query = RestApiQuery(query_to_join=creator_resource_path_query, url=creator_url_template,
-                                         params=params,
-                                         json_path=json_path, field_names=field_names, skip_no_result=True,
-                                         can_skip_failure=failure_handler.can_skip_failure)
-
-        return owner_email_query
+        return RestApiQuery(
+            query_to_join=creator_resource_path_query,
+            url=creator_url_template,
+            params=params,
+            json_path=json_path,
+            field_names=field_names,
+            skip_no_result=True,
+            can_skip_failure=failure_handler.can_skip_failure,
+        )

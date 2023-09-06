@@ -66,8 +66,11 @@ class MySQLCSVPublisher(Publisher):
         self._sorted_record_files = self._sort_record_files(self._record_files)
         self._record_files_iter = iter(self._sorted_record_files)
 
-        connect_args = {k: v for k, v in conf.get_config(MySQLCSVPublisher.CONNECT_ARGS,
-                                                         default=ConfigTree()).items()}
+        connect_args = dict(
+            conf.get_config(
+                MySQLCSVPublisher.CONNECT_ARGS, default=ConfigTree()
+            ).items()
+        )
         self._engine = create_engine(conf.get_string(MySQLCSVPublisher.CONN_STRING),
                                      echo=conf.get_bool(MySQLCSVPublisher.ENGINE_ECHO),
                                      connect_args=connect_args)
@@ -166,10 +169,15 @@ class MySQLCSVPublisher(Publisher):
         :param table_name:
         :return:
         """
-        for model in Base._decl_class_registry.values():
-            if hasattr(model, '__tablename__') and model.__tablename__ == table_name:
-                return model
-        return None
+        return next(
+            (
+                model
+                for model in Base._decl_class_registry.values()
+                if hasattr(model, '__tablename__')
+                and model.__tablename__ == table_name
+            ),
+            None,
+        )
 
     def _create_record(self, model: Type[RDSModel], record_dict: Dict) -> RDSModel:
         """

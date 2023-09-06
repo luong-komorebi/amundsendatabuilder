@@ -33,11 +33,10 @@ class RestAPIExtractor(Extractor):
 
         self._restapi_query: BaseRestApiQuery = conf.get(REST_API_QUERY)
         self._iterator: Optional[Iterator[Dict[str, Any]]] = None
-        self._static_dict = conf.get(STATIC_RECORD_DICT, dict())
+        self._static_dict = conf.get(STATIC_RECORD_DICT, {})
         LOGGER.info('static record: %s', self._static_dict)
 
-        model_class = conf.get(MODEL_CLASS, None)
-        if model_class:
+        if model_class := conf.get(MODEL_CLASS, None):
             module_name, class_name = model_class.rsplit(".", 1)
             mod = importlib.import_module(module_name)
             self.model_class = getattr(mod, class_name)
@@ -60,10 +59,7 @@ class RestAPIExtractor(Extractor):
         if self._static_dict:
             record.update(self._static_dict)
 
-        if hasattr(self, 'model_class'):
-            return self.model_class(**record)
-
-        return record
+        return self.model_class(**record) if hasattr(self, 'model_class') else record
 
     def get_scope(self) -> str:
 

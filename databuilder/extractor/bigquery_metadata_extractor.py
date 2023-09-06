@@ -54,8 +54,7 @@ class BigQueryMetadataExtractor(BaseBigQueryExtractor):
                         continue
 
                     table_id = table_prefix
-                    grouped_tables.add(table_prefix)
-
+                    grouped_tables.add(table_id)
                 table = self.bigquery_service.tables().get(
                     projectId=tableRef['projectId'],
                     datasetId=tableRef['datasetId'],
@@ -73,27 +72,22 @@ class BigQueryMetadataExtractor(BaseBigQueryExtractor):
                             # TRICKY: this mutates :cols:
                             total_cols = self._iterate_over_cols('', column, cols, total_cols + 1)
 
-                table_meta = TableMetadata(
+                yield TableMetadata(
                     database='bigquery',
                     cluster=tableRef['projectId'],
                     schema=tableRef['datasetId'],
                     name=table_id,
                     description=table.get('description', ''),
                     columns=cols,
-                    is_view=table['type'] == 'VIEW')
-
-                yield(table_meta)
+                    is_view=table['type'] == 'VIEW',
+                )
 
     def _iterate_over_cols(self,
                            parent: str,
                            column: Dict[str, str],
                            cols: List[ColumnMetadata],
                            total_cols: int) -> int:
-        if len(parent) > 0:
-            col_name = f'{parent}.{column["name"]}'
-        else:
-            col_name = column['name']
-
+        col_name = f'{parent}.{column["name"]}' if parent != "" else column['name']
         if column['type'] == 'RECORD':
             col = ColumnMetadata(
                 name=col_name,

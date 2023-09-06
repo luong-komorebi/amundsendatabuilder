@@ -101,12 +101,9 @@ class FSNeptuneCSVLoader(Loader):
         :return:
         """
 
-        node = csv_serializable.next_node()
-        while node:
-
+        while node := csv_serializable.next_node():
             node.attributes[PUBLISHED_TAG_PROPERTY_NAME] = self.job_publisher_tag
-            node_dict = neptune_serializer.convert_node(node)
-            if node_dict:
+            if node_dict := neptune_serializer.convert_node(node):
                 key = (node.label, len(node_dict))
                 file_suffix = '{}_{}'.format(*key)
                 node_writer = self._get_writer(
@@ -117,26 +114,21 @@ class FSNeptuneCSVLoader(Loader):
                     file_suffix
                 )
                 node_writer.writerow(node_dict)
-            node = csv_serializable.next_node()
-
-        relation = csv_serializable.next_relation()
-        while relation:
+        while relation := csv_serializable.next_relation():
             relation.attributes[PUBLISHED_TAG_PROPERTY_NAME] = self.job_publisher_tag
-            relation_dicts = neptune_serializer.convert_relationship(relation)
-            if relation_dicts:
+            if relation_dicts := neptune_serializer.convert_relationship(relation):
                 key2 = (relation.start_label,
                         relation.end_label,
                         relation.type,
                         len(relation_dicts[0]))
 
-                file_suffix = '{}_{}_{}'.format(key2[0], key2[1], key2[2])
+                file_suffix = f'{key2[0]}_{key2[1]}_{key2[2]}'
                 relation_writer = self._get_writer(relation_dicts[0],
                                                    self._relation_file_mapping,
                                                    key2,
                                                    self._relation_dir,
                                                    file_suffix)
                 relation_writer.writerows(relation_dicts)
-            relation = csv_serializable.next_relation()
 
     def _get_writer(self,
                     csv_record_dict: Dict[str, Any],

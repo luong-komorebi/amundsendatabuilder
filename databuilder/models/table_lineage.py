@@ -43,7 +43,6 @@ class BaseLineage(GraphSerializable):
         :return:
         """
         return
-        yield
 
     @abstractmethod
     def _create_rel_iterator(self) -> Iterator[GraphRelationship]:
@@ -71,16 +70,15 @@ class TableLineage(BaseLineage):
         :return:
         """
         for downstream_key in self.downstream_deps:
-            relationship = GraphRelationship(
+            yield GraphRelationship(
                 start_key=self.table_key,
                 start_label=TableMetadata.TABLE_NODE_LABEL,
                 end_label=TableMetadata.TABLE_NODE_LABEL,
                 end_key=downstream_key,
                 type=TableLineage.ORIGIN_DEPENDENCY_RELATION_TYPE,
                 reverse_type=TableLineage.DEPENDENCY_ORIGIN_RELATION_TYPE,
-                attributes={}
+                attributes={},
             )
-            yield relationship
 
     def __repr__(self) -> str:
         return f'TableLineage({self.table_key!r})'
@@ -106,16 +104,15 @@ class ColumnLineage(BaseLineage):
         :return:
         """
         for downstream_key in self.downstream_deps:
-            relationship = GraphRelationship(
+            yield GraphRelationship(
                 start_key=self.column_key,
                 start_label=ColumnMetadata.COLUMN_NODE_LABEL,
                 end_label=ColumnMetadata.COLUMN_NODE_LABEL,
                 end_key=downstream_key,
                 type=ColumnLineage.ORIGIN_DEPENDENCY_RELATION_TYPE,
                 reverse_type=ColumnLineage.DEPENDENCY_ORIGIN_RELATION_TYPE,
-                attributes={}
+                attributes={},
             )
-            yield relationship
 
     def __repr__(self) -> str:
         return f'ColumnLineage({self.column_key!r})'

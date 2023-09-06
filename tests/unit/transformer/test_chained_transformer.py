@@ -58,9 +58,9 @@ class TestChainedTransformer(unittest.TestCase):
     def test_transformer_transforms(self) -> None:
 
         mock_transformer1 = MagicMock()
-        mock_transformer1.transform.side_effect = lambda s: s + "b"
+        mock_transformer1.transform.side_effect = lambda s: f"{s}b"
         mock_transformer2 = MagicMock()
-        mock_transformer2.transform.side_effect = lambda s: s + "c"
+        mock_transformer2.transform.side_effect = lambda s: f"{s}c"
 
         chained_transformer = ChainedTransformer(
             transformers=[mock_transformer1, mock_transformer2]

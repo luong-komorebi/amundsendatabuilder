@@ -162,10 +162,8 @@ class HiveTableMetadataExtractor(Extractor):
         Provides iterator of result row from SQLAlchemy extractor
         :return:
         """
-        row = self._alchemy_extractor.extract()
-        while row:
+        while row := self._alchemy_extractor.extract():
             yield row
-            row = self._alchemy_extractor.extract()
 
     def _get_table_key(self, row: Dict[str, Any]) -> Union[TableKey, None]:
         """
@@ -173,7 +171,4 @@ class HiveTableMetadataExtractor(Extractor):
         :param row:
         :return:
         """
-        if row:
-            return TableKey(schema=row['schema'], table_name=row['name'])
-
-        return None
+        return TableKey(schema=row['schema'], table_name=row['name']) if row else None

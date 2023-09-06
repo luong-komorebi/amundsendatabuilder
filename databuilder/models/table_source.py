@@ -77,40 +77,34 @@ class TableSource(GraphSerializable, TableSerializable):
         Create a table source node
         :return:
         """
-        node = GraphNode(
+        yield GraphNode(
             key=self.get_source_model_key(),
             label=TableSource.LABEL,
-            attributes={
-                'source': self.source,
-                'source_type': self.source_type
-            }
+            attributes={'source': self.source, 'source_type': self.source_type},
         )
-        yield node
 
     def _create_relation_iterator(self) -> Iterator[GraphRelationship]:
         """
         Create relation map between owner record with original hive table
         :return:
         """
-        relationship = GraphRelationship(
+        yield GraphRelationship(
             start_label=TableSource.LABEL,
             start_key=self.get_source_model_key(),
             end_label=TableMetadata.TABLE_NODE_LABEL,
             end_key=self.get_metadata_model_key(),
             type=TableSource.SOURCE_TABLE_RELATION_TYPE,
             reverse_type=TableSource.TABLE_SOURCE_RELATION_TYPE,
-            attributes={}
+            attributes={},
         )
-        yield relationship
 
     def _create_record_iterator(self) -> Iterator[RDSModel]:
-        record = RDSTableSource(
+        yield RDSTableSource(
             rk=self.get_source_model_key(),
             source=self.source,
             source_type=self.source_type,
-            table_rk=self.get_metadata_model_key()
+            table_rk=self.get_metadata_model_key(),
         )
-        yield record
 
     def __repr__(self) -> str:
         return f'TableSource({self.db!r}, {self.cluster!r}, {self.schema!r}, {self.table!r}, {self.source!r})'

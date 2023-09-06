@@ -80,16 +80,15 @@ class FeastExtractor(Extractor):
                 )
             )
 
-        for index, feature in enumerate(feature_table.features):
-            columns.append(
-                ColumnMetadata(
-                    feature.name,
-                    None,
-                    feature.dtype.name,
-                    len(feature_table.entities) + index,
-                )
+        columns.extend(
+            ColumnMetadata(
+                feature.name,
+                None,
+                feature.dtype.name,
+                len(feature_table.entities) + index,
             )
-
+            for index, feature in enumerate(feature_table.features)
+        )
         yield TableMetadata(
             "feast",
             self._feast_service,

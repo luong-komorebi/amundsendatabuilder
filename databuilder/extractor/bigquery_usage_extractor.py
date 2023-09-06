@@ -49,7 +49,7 @@ class BigQueryTableUsageExtractor(BaseBigQueryExtractor):
         for entry in self._retrieve_records():
             count += 1
             if count % self.pagesize == 0:
-                LOGGER.info(f'Aggregated %i records', count)
+                LOGGER.info('Aggregated %i records', count)
 
             if entry is None:
                 continue
@@ -66,21 +66,14 @@ class BigQueryTableUsageExtractor(BaseBigQueryExtractor):
                 continue
 
             email = entry['protoPayload']['authenticationInfo']['principalEmail']
-            # Query results can be cached and if the source tables remain untouched,
-            # bigquery will return it from a 24 hour cache result instead. In that
-            # case, referencedTables has been observed to be empty:
-            # https://cloud.google.com/logging/docs/reference/audit/bigquery/rest/Shared.Types/AuditData#JobStatistics
-
-            refTables = job['jobStatistics'].get('referencedTables', None)
-            if refTables:
+            if refTables := job['jobStatistics'].get('referencedTables', None):
                 if 'totalTablesProcessed' in job['jobStatistics']:
                     self._create_records(
                         refTables,
                         job['jobStatistics']['totalTablesProcessed'], email,
                         job['jobName']['jobId'])
 
-            refViews = job['jobStatistics'].get('referencedViews', None)
-            if refViews:
+            if refViews := job['jobStatistics'].get('referencedViews', None):
                 if 'totalViewsProcessed' in job['jobStatistics']:
                     self._create_records(
                         refViews, job['jobStatistics']['totalViewsProcessed'],
@@ -124,8 +117,7 @@ class BigQueryTableUsageExtractor(BaseBigQueryExtractor):
                       f'timestamp >= "{self.timestamp}"'
         }
         for page in self._page_over_results(body):
-            for entry in page['entries']:
-                yield entry
+            yield from page['entries']
 
     def extract(self) -> Optional[Tuple[Any, int]]:
         try:

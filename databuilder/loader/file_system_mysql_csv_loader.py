@@ -96,8 +96,7 @@ class FSMySQLCSVLoader(Loader):
         :param csv_serializable:
         :return:
         """
-        record = csv_serializable.next_record()
-        while record:
+        while record := csv_serializable.next_record():
             record_dict = mysql_serializer.serialize_record(record)
             table_name = record.__tablename__
             key = (table_name, self._make_key(record_dict))
@@ -108,7 +107,6 @@ class FSMySQLCSVLoader(Loader):
                                              self._record_dir,
                                              file_suffix)
             record_writer.writerow(record_dict)
-            record = csv_serializable.next_record()
 
     def _get_writer(self,
                     csv_record_dict: Dict[str, Any],

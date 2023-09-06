@@ -47,7 +47,7 @@ class TableColumnStats(GraphSerializable, TableSerializable):
         self.end_epoch = end_epoch
         self.cluster = cluster
         self.stat_type = stat_name
-        self.stat_val = str(stat_val)
+        self.stat_val = stat_val
         self._node_iter = self._create_node_iterator()
         self._relation_iter = self._create_relation_iterator()
         self._record_iter = self._create_record_iterator()
@@ -92,7 +92,7 @@ class TableColumnStats(GraphSerializable, TableSerializable):
         Create a table stat node
         :return:
         """
-        node = GraphNode(
+        yield GraphNode(
             key=self.get_table_stat_model_key(),
             label=TableColumnStats.LABEL,
             attributes={
@@ -100,33 +100,30 @@ class TableColumnStats(GraphSerializable, TableSerializable):
                 'stat_type': self.stat_type,
                 'start_epoch': self.start_epoch,
                 'end_epoch': self.end_epoch,
-            }
+            },
         )
-        yield node
 
     def _create_relation_iterator(self) -> Iterator[GraphRelationship]:
         """
         Create relation map between table stat record with original hive table
         :return:
         """
-        relationship = GraphRelationship(
+        yield GraphRelationship(
             start_key=self.get_table_stat_model_key(),
             start_label=TableColumnStats.LABEL,
             end_key=self.get_col_key(),
             end_label=ColumnMetadata.COLUMN_NODE_LABEL,
             type=TableColumnStats.STAT_Column_RELATION_TYPE,
             reverse_type=TableColumnStats.Column_STAT_RELATION_TYPE,
-            attributes={}
+            attributes={},
         )
-        yield relationship
 
     def _create_record_iterator(self) -> Iterator[RDSModel]:
-        record = RDSColumnStat(
+        yield RDSColumnStat(
             rk=self.get_table_stat_model_key(),
             stat_val=self.stat_val,
             stat_type=self.stat_type,
             start_epoch=self.start_epoch,
             end_epoch=self.end_epoch,
-            column_rk=self.get_col_key()
+            column_rk=self.get_col_key(),
         )
-        yield record

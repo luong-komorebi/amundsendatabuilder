@@ -41,7 +41,7 @@ def create_feast_job_config():
     node_files_folder = f"{tmp_folder}/nodes/"
     relationship_files_folder = f"{tmp_folder}/relationships/"
 
-    job_config = ConfigFactory.from_dict(
+    return ConfigFactory.from_dict(
         {
             f"extractor.feast.{FeastExtractor.FEAST_ENDPOINT_CONFIG_KEY}": feast_endpoint,
             f"loader.filesystem_csv_neo4j.{FsNeo4jCSVLoader.NODE_DIR_PATH}": node_files_folder,
@@ -51,10 +51,9 @@ def create_feast_job_config():
             f"publisher.neo4j.{neo4j_csv_publisher.NEO4J_END_POINT_KEY}": neo4j_endpoint,
             f"publisher.neo4j.{neo4j_csv_publisher.NEO4J_USER}": neo4j_user,
             f"publisher.neo4j.{neo4j_csv_publisher.NEO4J_PASSWORD}": neo4j_password,
-            f"publisher.neo4j.job_publish_tag": "some_unique_tag",  # TO-DO unique tag must be added
+            "publisher.neo4j.job_publish_tag": "some_unique_tag",
         }
     )
-    return job_config
 
 
 def create_es_publish_job_config(
@@ -81,7 +80,7 @@ def create_es_publish_job_config(
     # elastic search client instance
     elasticsearch_client = es
     # unique name of new index in Elasticsearch
-    elasticsearch_new_index_key = "tables" + str(uuid.uuid4())
+    elasticsearch_new_index_key = f"tables{str(uuid.uuid4())}"
 
     job_config = ConfigFactory.from_dict(
         {

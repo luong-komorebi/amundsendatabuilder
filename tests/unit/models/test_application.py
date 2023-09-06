@@ -61,22 +61,16 @@ class TestApplication(unittest.TestCase):
 
     def test_create_nodes(self) -> None:
         actual = []
-        node = self.application.create_next_node()
-        while node:
+        while node := self.application.create_next_node():
             serialized_next_node = neo4_serializer.serialize_node(node)
             actual.append(serialized_next_node)
-            node = self.application.create_next_node()
-
         self.assertEqual(actual, self.expected_node_results)
 
     def test_create_nodes_neptune(self) -> None:
         actual = []
-        next_node = self.application.create_next_node()
-        while next_node:
+        while next_node := self.application.create_next_node():
             serialized_next_node = neptune_serializer.convert_node(next_node)
             actual.append(serialized_next_node)
-            next_node = self.application.create_next_node()
-
         node_id = 'Application:application://gold.airflow/event_test/hive.default.test_table'
         node_key = 'application://gold.airflow/event_test/hive.default.test_table'
         neptune_expected = [{
@@ -94,12 +88,9 @@ class TestApplication(unittest.TestCase):
 
     def test_create_relation(self) -> None:
         actual = []
-        relation = self.application.create_next_relation()
-        while relation:
+        while relation := self.application.create_next_relation():
             serialized_relation = neo4_serializer.serialize_relationship(relation)
             actual.append(serialized_relation)
-            relation = self.application.create_next_relation()
-
         self.assertEqual(actual, self.expected_relation_results)
 
     def test_create_relations_neptune(self) -> None:
@@ -143,12 +134,9 @@ class TestApplication(unittest.TestCase):
         neptune_expected = [[neptune_forward_expected, neptune_reversed_expected]]
 
         actual = []
-        next_relation = self.application.create_next_relation()
-        while next_relation:
+        while next_relation := self.application.create_next_relation():
             serialized_next_relation = neptune_serializer.convert_relationship(next_relation)
             actual.append(serialized_next_relation)
-            next_relation = self.application.create_next_relation()
-
         self.assertEqual(actual, neptune_expected)
 
     def test_create_records(self) -> None:
@@ -166,10 +154,7 @@ class TestApplication(unittest.TestCase):
         expected = [expected_application_record, expected_application_table_record]
 
         actual = []
-        record = self.application.create_next_record()
-        while record:
+        while record := self.application.create_next_record():
             serialized_record = mysql_serializer.serialize_record(record)
             actual.append(serialized_record)
-            record = self.application.create_next_record()
-
         self.assertEqual(expected, actual)

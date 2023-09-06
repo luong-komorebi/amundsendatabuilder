@@ -117,38 +117,38 @@ class TestDashboardChart(unittest.TestCase):
 
         neptune_forward_expected = {
             NEPTUNE_HEADER_ID: "{label}:{from_vertex_id}_{to_vertex_id}".format(
-                from_vertex_id="Query:" + start_key,
-                to_vertex_id="Chart:" + end_key,
-                label='HAS_CHART'
+                from_vertex_id=f"Query:{start_key}",
+                to_vertex_id=f"Chart:{end_key}",
+                label='HAS_CHART',
             ),
             METADATA_KEY_PROPERTY_NAME_BULK_LOADER_FORMAT: "{label}:{from_vertex_id}_{to_vertex_id}".format(
-                from_vertex_id="Query:" + start_key,
-                to_vertex_id="Chart:" + end_key,
-                label='HAS_CHART'
+                from_vertex_id=f"Query:{start_key}",
+                to_vertex_id=f"Chart:{end_key}",
+                label='HAS_CHART',
             ),
-            NEPTUNE_RELATIONSHIP_HEADER_FROM: "Query:" + start_key,
-            NEPTUNE_RELATIONSHIP_HEADER_TO: "Chart:" + end_key,
+            NEPTUNE_RELATIONSHIP_HEADER_FROM: f"Query:{start_key}",
+            NEPTUNE_RELATIONSHIP_HEADER_TO: f"Chart:{end_key}",
             NEPTUNE_HEADER_LABEL: 'HAS_CHART',
             NEPTUNE_LAST_EXTRACTED_AT_RELATIONSHIP_PROPERTY_NAME_BULK_LOADER_FORMAT: ANY,
-            NEPTUNE_CREATION_TYPE_RELATIONSHIP_PROPERTY_NAME_BULK_LOADER_FORMAT: NEPTUNE_CREATION_TYPE_JOB
+            NEPTUNE_CREATION_TYPE_RELATIONSHIP_PROPERTY_NAME_BULK_LOADER_FORMAT: NEPTUNE_CREATION_TYPE_JOB,
         }
 
         neptune_reversed_expected = {
             NEPTUNE_HEADER_ID: "{label}:{from_vertex_id}_{to_vertex_id}".format(
-                from_vertex_id="Chart:" + end_key,
-                to_vertex_id="Query:" + start_key,
-                label='CHART_OF'
+                from_vertex_id=f"Chart:{end_key}",
+                to_vertex_id=f"Query:{start_key}",
+                label='CHART_OF',
             ),
             METADATA_KEY_PROPERTY_NAME_BULK_LOADER_FORMAT: "{label}:{from_vertex_id}_{to_vertex_id}".format(
-                from_vertex_id="Chart:" + end_key,
-                to_vertex_id="Query:" + start_key,
-                label='CHART_OF'
+                from_vertex_id=f"Chart:{end_key}",
+                to_vertex_id=f"Query:{start_key}",
+                label='CHART_OF',
             ),
-            NEPTUNE_RELATIONSHIP_HEADER_FROM: "Chart:" + end_key,
-            NEPTUNE_RELATIONSHIP_HEADER_TO: "Query:" + start_key,
+            NEPTUNE_RELATIONSHIP_HEADER_FROM: f"Chart:{end_key}",
+            NEPTUNE_RELATIONSHIP_HEADER_TO: f"Query:{start_key}",
             NEPTUNE_HEADER_LABEL: 'CHART_OF',
             NEPTUNE_LAST_EXTRACTED_AT_RELATIONSHIP_PROPERTY_NAME_BULK_LOADER_FORMAT: ANY,
-            NEPTUNE_CREATION_TYPE_RELATIONSHIP_PROPERTY_NAME_BULK_LOADER_FORMAT: NEPTUNE_CREATION_TYPE_JOB
+            NEPTUNE_CREATION_TYPE_RELATIONSHIP_PROPERTY_NAME_BULK_LOADER_FORMAT: NEPTUNE_CREATION_TYPE_JOB,
         }
 
         assert actual is not None

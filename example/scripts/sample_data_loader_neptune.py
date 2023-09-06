@@ -21,6 +21,7 @@ For other available extractors, please take a look at
 https://github.com/amundsen-io/amundsendatabuilder#list-of-extractors
 """
 
+
 import logging
 import os
 import uuid
@@ -62,13 +63,11 @@ assert S3_BUCKET_NAME, "A S3 bucket is needed to load the data from"
 S3_DATA_PATH = os.getenv("S3_DATA_PATH", "amundsen_data")
 AWS_REGION = os.environ.get("AWS_REGION", 'us-east-1')
 
-es = Elasticsearch(
-    '{}:{}'.format(es_host, es_port)
-)
+es = Elasticsearch(f'{es_host}:{es_port}')
 
 Base = declarative_base()
 
-NEPTUNE_ENDPOINT = '{}:{}'.format(neptune_host, neptune_port)
+NEPTUNE_ENDPOINT = f'{neptune_host}:{neptune_port}'
 
 LOGGER = logging.getLogger(__name__)
 
@@ -285,7 +284,9 @@ def create_es_publisher_sample_job(elasticsearch_index_alias='table_search_index
     # elastic search client instance
     elasticsearch_client = es
     # unique name of new index in Elasticsearch
-    elasticsearch_new_index_key = '{}_'.format(elasticsearch_doc_type_key) + str(uuid.uuid4())
+    elasticsearch_new_index_key = (
+        f'{elasticsearch_doc_type_key}_{str(uuid.uuid4())}'
+    )
     publisher = ElasticsearchPublisher()
     session = boto3.Session()
     aws_creds = session.get_credentials()
@@ -319,15 +320,14 @@ def create_es_publisher_sample_job(elasticsearch_index_alias='table_search_index
 
     # only optionally add these keys, so need to dynamically `put` them
     if elasticsearch_mapping:
-        job_config.put('publisher.elasticsearch.{}'.format(ElasticsearchPublisher.ELASTICSEARCH_MAPPING_CONFIG_KEY),
-                       elasticsearch_mapping)
+        job_config.put(
+            f'publisher.elasticsearch.{ElasticsearchPublisher.ELASTICSEARCH_MAPPING_CONFIG_KEY}',
+            elasticsearch_mapping,
+        )
 
-    job = DefaultJob(
-        conf=job_config,
-        task=task,
-        publisher=ElasticsearchPublisher()
+    return DefaultJob(
+        conf=job_config, task=task, publisher=ElasticsearchPublisher()
     )
-    return job
 
 
 if __name__ == "__main__":

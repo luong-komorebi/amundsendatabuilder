@@ -211,7 +211,7 @@ class TestPostgresMetadataExtractor(unittest.TestCase):
     def _union(self,
                target: Dict[Any, Any],
                extra: Dict[Any, Any]) -> Dict[Any, Any]:
-        target.update(extra)
+        target |= extra
         return target
 
 

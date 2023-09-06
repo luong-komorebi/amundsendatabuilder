@@ -53,7 +53,7 @@ class KafkaSourceExtractor(Extractor, Callback):
     def init(self, conf: ConfigTree) -> None:
         self.conf = conf
         self.consumer_config = conf.get_config(KafkaSourceExtractor.CONSUMER_CONFIG).\
-            as_plain_ordered_dict()
+                as_plain_ordered_dict()
 
         self.topic_names: list = conf.get_list(KafkaSourceExtractor.TOPIC_NAME_LIST)
 
@@ -73,17 +73,16 @@ class KafkaSourceExtractor(Extractor, Callback):
         val_transformer = conf.get(KafkaSourceExtractor.RAW_VALUE_TRANSFORMER)
         if val_transformer is None:
             raise Exception('A message transformer should be provided.')
-        else:
-            try:
-                module_name, class_name = val_transformer.rsplit(".", 1)
-                mod = importlib.import_module(module_name)
-                self.transformer = getattr(mod, class_name)()
-            except Exception:
-                raise RuntimeError('The Kafka message value deserde class cant instantiated!')
+        try:
+            module_name, class_name = val_transformer.rsplit(".", 1)
+            mod = importlib.import_module(module_name)
+            self.transformer = getattr(mod, class_name)()
+        except Exception:
+            raise RuntimeError('The Kafka message value deserde class cant instantiated!')
 
-            if not isinstance(self.transformer, Transformer):
-                raise Exception('The transformer needs to be subclass of the base transformer')
-            self.transformer.init(Scoped.get_scoped_conf(conf, self.transformer.get_scope()))
+        if not isinstance(self.transformer, Transformer):
+            raise Exception('The transformer needs to be subclass of the base transformer')
+        self.transformer.init(Scoped.get_scoped_conf(conf, self.transformer.get_scope()))
 
         # Consumer init
         try:
@@ -103,8 +102,7 @@ class KafkaSourceExtractor(Extractor, Callback):
         records = self.consume()
         for record in records:
             try:
-                transform_record = self.transformer.transform(record=record)
-                yield transform_record
+                yield self.transformer.transform(record=record)
             except Exception as e:
                 # Has issues tranform / deserde the record. drop the record in default
                 LOGGER.exception(e)

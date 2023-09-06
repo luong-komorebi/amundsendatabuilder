@@ -73,17 +73,13 @@ class CassandraExtractor(Extractor):
                 if self._filter and not self._filter(keyspace, table):
                     continue
 
-                columns = []
-
                 columns_dict = self._get_columns(keyspace, table)
-                for idx, (column_name, column) in enumerate(columns_dict.items()):
-                    columns.append(ColumnMetadata(
-                        column_name,
-                        None,
-                        column.cql_type,
-                        idx
-                    ))
-
+                columns = [
+                    ColumnMetadata(column_name, None, column.cql_type, idx)
+                    for idx, (column_name, column) in enumerate(
+                        columns_dict.items()
+                    )
+                ]
                 yield TableMetadata(
                     'cassandra',
                     self._cluster,

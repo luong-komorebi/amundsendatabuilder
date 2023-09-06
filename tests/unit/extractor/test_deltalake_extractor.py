@@ -96,23 +96,23 @@ class TestDeltaLakeExtractor(unittest.TestCase):
     def test_scrape_view_detail(self) -> None:
         actual = self.dExtractor.scrape_view_detail("test_schema2.test_view1")
         self.assertIsNotNone(actual)
-        expected = {'Created By': 'Spark 3.0.1',
-                    'Created Time': None,
-                    'Database': 'test_schema2',
-                    'Last Access': 'UNKNOWN',
-                    'Table': 'test_view1',
-                    'Table Properties': '[view.catalogAndNamespace.numParts=2, '
-                                        'view.query.out.col.0=a2, view.query.out.numCols=2, '
-                                        'view.query.out.col.1=b2, '
-                                        'view.catalogAndNamespace.part.0=spark_catalog, '
-                                        'view.catalogAndNamespace.part.1=default]',
-                    'Type': 'VIEW',
-                    'View Catalog and Namespace': 'spark_catalog.default',
-                    'View Original Text': '(select * from test_schema2.test_table2)',
-                    'View Query Output Columns': '[a2, b2]',
-                    'View Text': '(select * from test_schema2.test_table2)'}
         if actual:
             actual['Created Time'] = None
+            expected = {'Created By': 'Spark 3.0.1',
+                        'Created Time': None,
+                        'Database': 'test_schema2',
+                        'Last Access': 'UNKNOWN',
+                        'Table': 'test_view1',
+                        'Table Properties': '[view.catalogAndNamespace.numParts=2, '
+                                            'view.query.out.col.0=a2, view.query.out.numCols=2, '
+                                            'view.query.out.col.1=b2, '
+                                            'view.catalogAndNamespace.part.0=spark_catalog, '
+                                            'view.catalogAndNamespace.part.1=default]',
+                        'Type': 'VIEW',
+                        'View Catalog and Namespace': 'spark_catalog.default',
+                        'View Original Text': '(select * from test_schema2.test_table2)',
+                        'View Query Output Columns': '[a2, b2]',
+                        'View Text': '(select * from test_schema2.test_table2)'}
             self.assertEqual(actual, expected)
 
     def test_fetch_partitioned_delta_columns(self) -> None:
@@ -160,10 +160,12 @@ class TestDeltaLakeExtractor(unittest.TestCase):
         self.assertEqual(str(expected), str(created_metadata))
 
     def test_create_last_updated(self) -> None:
-        scraped_table = self.dExtractor.scrape_table(Table("test_table1", "test_schema1", None, "delta", False))
-        actual_last_updated = None
-        if scraped_table:
+        if scraped_table := self.dExtractor.scrape_table(
+            Table("test_table1", "test_schema1", None, "delta", False)
+        ):
             actual_last_updated = self.dExtractor.create_table_last_updated(scraped_table)
+        else:
+            actual_last_updated = None
         self.assertIsNotNone(actual_last_updated)
 
     def test_extract(self) -> None:

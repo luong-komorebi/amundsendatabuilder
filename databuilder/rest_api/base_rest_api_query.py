@@ -19,7 +19,7 @@ class BaseRestApiQuery(object, metaclass=abc.ABCMeta):
         :return:
         """
 
-        return iter([dict()])
+        return iter([{}])
 
 
 class RestApiQuerySeed(BaseRestApiQuery):

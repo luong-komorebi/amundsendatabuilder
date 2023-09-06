@@ -110,7 +110,11 @@ class NeptuneCSVPublisher(Publisher):
 
         load_status = "LOAD_NOT_STARTED"
         all_errors: List[NeptuneBulkLoaderLoadStatusErrorLogEntry] = []
-        while load_status in ("LOAD_IN_PROGRESS", "LOAD_NOT_STARTED", "LOAD_IN_QUEUE"):
+        while load_status in {
+            "LOAD_IN_PROGRESS",
+            "LOAD_NOT_STARTED",
+            "LOAD_IN_QUEUE",
+        }:
             time.sleep(self.status_polling_period)
             load_status, errors = self._poll_status(load_id)
             all_errors.extend(errors)
@@ -136,10 +140,11 @@ class NeptuneCSVPublisher(Publisher):
         try:
             load_status = load_status_payload['overallStatus']['status']
         except KeyError:
-            raise Exception("Failed to check status of {0} response: {1}".format(
-                str(load_id),
-                repr(load_status_response)
-            ))
+            raise Exception(
+                "Failed to check status of {0} response: {1}".format(
+                    load_id, repr(load_status_response)
+                )
+            )
         return load_status, load_status_payload.get('errors', {}).get('errorLogs', [])
 
     def _get_file_paths(self) -> List[str]:

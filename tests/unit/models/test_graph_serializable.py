@@ -18,11 +18,8 @@ class TestSerialize(unittest.TestCase):
         movie = Movie('Top Gun', actors, cities)
 
         actual = []
-        node_row = movie.next_node()
-        while node_row:
+        while node_row := movie.next_node():
             actual.append(neo4_serializer.serialize_node(node_row))
-            node_row = movie.next_node()
-
         expected = [
             {'name': 'Top Gun', 'KEY': 'movie://Top Gun', 'LABEL': 'Movie'},
             {'name': 'Top Gun', 'KEY': 'actor://Tom Cruise', 'LABEL': 'Actor'},
@@ -33,11 +30,8 @@ class TestSerialize(unittest.TestCase):
         self.assertEqual(expected, actual)
 
         actual = []
-        relation_row = movie.next_relation()
-        while relation_row:
+        while relation_row := movie.next_relation():
             actual.append(neo4_serializer.serialize_relationship(relation_row))
-            relation_row = movie.next_relation()
-
         expected = [
             {'END_KEY': 'actor://Tom Cruise', 'START_LABEL': 'Movie',
              'END_LABEL': 'Actor', 'START_KEY': 'movie://Top Gun',

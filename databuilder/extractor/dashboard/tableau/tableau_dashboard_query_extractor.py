@@ -36,16 +36,19 @@ class TableauGraphQLApiQueryExtractor(TableauGraphQLApiExtractor):
         for query in response['customSQLTables']:
             for workbook in query['downstreamWorkbooks']:
                 if workbook['projectName'] not in \
-                        self._conf.get_list(TableauGraphQLApiQueryExtractor.EXCLUDED_PROJECTS, []):
-                    data = {
+                            self._conf.get_list(TableauGraphQLApiQueryExtractor.EXCLUDED_PROJECTS, []):
+                    yield {
                         'dashboard_group_id': workbook['projectName'],
-                        'dashboard_id': TableauDashboardUtils.sanitize_workbook_name(workbook['name']),
+                        'dashboard_id': TableauDashboardUtils.sanitize_workbook_name(
+                            workbook['name']
+                        ),
                         'query_name': query['name'],
                         'query_id': query['id'],
                         'query_text': query['query'],
-                        'cluster': self._conf.get_string(TableauGraphQLApiQueryExtractor.CLUSTER)
+                        'cluster': self._conf.get_string(
+                            TableauGraphQLApiQueryExtractor.CLUSTER
+                        ),
                     }
-                    yield data
 
 
 class TableauDashboardQueryExtractor(Extractor):
@@ -83,21 +86,19 @@ class TableauDashboardQueryExtractor(Extractor):
 
         self._extractor = self._build_extractor()
 
-        transformers = []
         dict_to_model_transformer = DictToModel()
         dict_to_model_transformer.init(
             conf=Scoped.get_scoped_conf(self._conf, dict_to_model_transformer.get_scope()).with_fallback(
                 ConfigFactory.from_dict(
                     {MODEL_CLASS: 'databuilder.models.dashboard.dashboard_query.DashboardQuery'})))
-        transformers.append(dict_to_model_transformer)
+        transformers = [dict_to_model_transformer]
         self._transformer = ChainedTransformer(transformers=transformers)
 
     def extract(self) -> Any:
-        record = self._extractor.extract()
-        if not record:
+        if record := self._extractor.extract():
+            return next(self._transformer.transform(record=record), None)
+        else:
             return None
-
-        return next(self._transformer.transform(record=record), None)
 
     def get_scope(self) -> str:
         return 'extractor.tableau_dashboard_query'

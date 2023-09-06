@@ -101,10 +101,13 @@ class FileSystem(Scoped):
         :return:
         """
         metadata_dict = self._dask_fs.info(path)
-        fm = FileMetadata(path=path,
-                          last_updated=metadata_dict[self._metadata_key_mapping[FileSystem.LAST_UPDATED]],
-                          size=metadata_dict[self._metadata_key_mapping[FileSystem.SIZE]])
-        return fm
+        return FileMetadata(
+            path=path,
+            last_updated=metadata_dict[
+                self._metadata_key_mapping[FileSystem.LAST_UPDATED]
+            ],
+            size=metadata_dict[self._metadata_key_mapping[FileSystem.SIZE]],
+        )
 
     def get_scope(self) -> str:
         return 'filesystem'

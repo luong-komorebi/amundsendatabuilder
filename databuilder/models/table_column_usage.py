@@ -36,7 +36,7 @@ class ColumnReader(object):
         self.table = table
         self.column = column
         self.user_email = user_email
-        self.read_count = int(read_count)
+        self.read_count = read_count
 
     def __repr__(self) -> str:
         return f"ColumnReader(database={self.database!r}, cluster={self.cluster!r}, " \
@@ -77,9 +77,7 @@ class TableColumnUsage(GraphSerializable, TableSerializable):
     def _create_node_iterator(self) -> Iterator[GraphNode]:
         for col_reader in self.col_readers:
             if col_reader.column == '*':
-                # using yield for better memory efficiency
-                user_node = User(email=col_reader.user_email).get_user_node()
-                yield user_node
+                yield User(email=col_reader.user_email).get_user_node()
 
     def create_next_relation(self) -> Union[GraphRelationship, None]:
         try:
@@ -89,7 +87,7 @@ class TableColumnUsage(GraphSerializable, TableSerializable):
 
     def _create_rel_iterator(self) -> Iterator[GraphRelationship]:
         for col_reader in self.col_readers:
-            relationship = GraphRelationship(
+            yield GraphRelationship(
                 start_label=TableMetadata.TABLE_NODE_LABEL,
                 start_key=self._get_table_key(col_reader),
                 end_label=User.USER_NODE_LABEL,
@@ -98,9 +96,8 @@ class TableColumnUsage(GraphSerializable, TableSerializable):
                 reverse_type=TableColumnUsage.USER_TABLE_RELATION_TYPE,
                 attributes={
                     TableColumnUsage.READ_RELATION_COUNT: col_reader.read_count
-                }
+                },
             )
-            yield relationship
 
     def create_next_record(self) -> Union[RDSModel, None]:
         try:
@@ -111,13 +108,12 @@ class TableColumnUsage(GraphSerializable, TableSerializable):
     def _create_record_iterator(self) -> Iterator[RDSModel]:
         for col_reader in self.col_readers:
             if col_reader.column == '*':
-                user_record = User(email=col_reader.user_email).get_user_record()
-                yield user_record
-
-            table_usage_record = RDSTableUsage(user_rk=self._get_user_key(col_reader.user_email),
-                                               table_rk=self._get_table_key(col_reader),
-                                               read_count=col_reader.read_count)
-            yield table_usage_record
+                yield User(email=col_reader.user_email).get_user_record()
+            yield RDSTableUsage(
+                user_rk=self._get_user_key(col_reader.user_email),
+                table_rk=self._get_table_key(col_reader),
+                read_count=col_reader.read_count,
+            )
 
     def _get_table_key(self, col_reader: ColumnReader) -> str:
         return TableMetadata.TABLE_KEY_FORMAT.format(db=col_reader.database,

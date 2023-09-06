@@ -12,6 +12,8 @@ def serialize_record(record: Optional[RDSModel]) -> Dict[str, Any]:
     if record is None:
         return {}
 
-    record_dict = {key: value for key, value in vars(record).items() if key in record.__table__.columns.keys()}
-
-    return record_dict
+    return {
+        key: value
+        for key, value in vars(record).items()
+        if key in record.__table__.columns.keys()
+    }

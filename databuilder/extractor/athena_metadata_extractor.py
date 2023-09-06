@@ -84,10 +84,16 @@ class AthenaMetadataExtractor(Extractor):
 
             for row in group:
                 last_row = row
-                columns.append(ColumnMetadata(row['col_name'],
-                                              row['extras'] if row['extras'] is not None else row['col_description'],
-                                              row['col_type'], row['col_sort_order']))
-
+                columns.append(
+                    ColumnMetadata(
+                        last_row['col_name'],
+                        last_row['extras']
+                        if last_row['extras'] is not None
+                        else last_row['col_description'],
+                        last_row['col_type'],
+                        last_row['col_sort_order'],
+                    )
+                )
             yield TableMetadata('athena', last_row['cluster'],
                                 last_row['schema'],
                                 last_row['name'],
@@ -99,10 +105,8 @@ class AthenaMetadataExtractor(Extractor):
         Provides iterator of result row from SQLAlchemy extractor
         :return:
         """
-        row = self._alchemy_extractor.extract()
-        while row:
+        while row := self._alchemy_extractor.extract():
             yield row
-            row = self._alchemy_extractor.extract()
 
     def _get_table_key(self, row: Dict[str, Any]) -> Union[TableKey, None]:
         """
@@ -110,7 +114,4 @@ class AthenaMetadataExtractor(Extractor):
         :param row:
         :return:
         """
-        if row:
-            return TableKey(schema=row['schema'], table_name=row['name'])
-
-        return None
+        return TableKey(schema=row['schema'], table_name=row['name']) if row else None

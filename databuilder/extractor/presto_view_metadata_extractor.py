@@ -77,8 +77,7 @@ class PrestoViewMetadataExtractor(Extractor):
         Using itertools.groupby and raw level iterator, it groups to table and yields TableMetadata
         :return:
         """
-        row = self._alchemy_extractor.extract()
-        while row:
+        while row := self._alchemy_extractor.extract():
             columns = self._get_column_metadata(row['view_original_text'])
             yield TableMetadata(database='presto',
                                 cluster=self._cluster,
@@ -87,7 +86,6 @@ class PrestoViewMetadataExtractor(Extractor):
                                 description=None,
                                 columns=columns,
                                 is_view=True)
-            row = self._alchemy_extractor.extract()
 
     def _get_column_metadata(self,
                              view_original_text: str) -> List[ColumnMetadata]:

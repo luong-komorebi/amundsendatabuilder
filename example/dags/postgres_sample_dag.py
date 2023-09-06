@@ -71,7 +71,7 @@ def connection_string():
     host = 'host.docker.internal'
     port = '5432'
     db = 'moviesdemo'
-    return "postgresql://%s:%s@%s:%s/%s" % (user, password, host, port, db)
+    return f"postgresql://{user}:{password}@{host}:{port}/{db}"
 
 
 def create_table_extract_job():

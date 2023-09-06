@@ -97,11 +97,9 @@ class SnowflakeTableLastUpdatedExtractor(Extractor):
         """
         Provides iterator of result row from SQLAlchemy extractor
         """
-        tbl_last_updated_row = self._alchemy_extractor.extract()
-        while tbl_last_updated_row:
+        while tbl_last_updated_row := self._alchemy_extractor.extract():
             yield TableLastUpdated(table_name=tbl_last_updated_row['table_name'],
                                    last_updated_time_epoch=tbl_last_updated_row['last_updated_time'],
                                    schema=tbl_last_updated_row['schema'],
                                    db=self._database,
                                    cluster=tbl_last_updated_row['cluster'])
-            tbl_last_updated_row = self._alchemy_extractor.extract()

@@ -56,10 +56,7 @@ class ModeDashboardChartsExtractor(Extractor):
 
     def extract(self) -> Any:
         record = self._extractor.extract()
-        if not record:
-            return None
-
-        return self._transformer.transform(record=record)
+        return None if not record else self._transformer.transform(record=record)
 
     def get_scope(self) -> str:
         return 'extractor.mode_dashboard_chart'
@@ -91,8 +88,12 @@ class ModeDashboardChartsExtractor(Extractor):
         charts_url_template = 'https://app.mode.com/api/{organization}/reports/{dashboard_id}/queries/{query_id}/charts'
         json_path = '(_embedded.charts[*].token) | (_embedded.charts[*]._links.report_viz_web.href)'
         field_names = ['chart_id', 'chart_url']
-        chart_names_query = RestApiQuery(query_to_join=query_names_query, url=charts_url_template, params=params,
-                                         json_path=json_path, field_names=field_names, skip_no_result=True,
-                                         json_path_contains_or=True)
-
-        return chart_names_query
+        return RestApiQuery(
+            query_to_join=query_names_query,
+            url=charts_url_template,
+            params=params,
+            json_path=json_path,
+            field_names=field_names,
+            skip_no_result=True,
+            json_path_contains_or=True,
+        )

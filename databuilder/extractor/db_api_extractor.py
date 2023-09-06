@@ -33,8 +33,7 @@ class DBAPIExtractor(Extractor):
         self.cursor = self.connection.cursor()
         self.sql = conf.get(DBAPIExtractor.SQL_CONFIG_KEY)
 
-        model_class = conf.get('model_class', None)
-        if model_class:
+        if model_class := conf.get('model_class', None):
             module_name, class_name = model_class.rsplit(".", 1)
             mod = importlib.import_module(module_name)
             self.model_class = getattr(mod, class_name)
@@ -62,11 +61,7 @@ class DBAPIExtractor(Extractor):
         except StopIteration:
             return None
 
-        if hasattr(self, 'model_class'):
-            obj = self.model_class(*result[:len(result)])
-            return obj
-        else:
-            return result
+        return self.model_class(*result[:]) if hasattr(self, 'model_class') else result
 
     def close(self) -> None:
         """

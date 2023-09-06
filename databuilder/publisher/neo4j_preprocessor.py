@@ -199,7 +199,4 @@ class DeleteRelationPreprocessor(RelationPreprocessor):
         :param reverse_relation:
         :return: bool. True if it needs preprocessing, otherwise False.
         """
-        if self._label_tuples and (start_label, end_label) not in self._label_tuples:
-            return False
-
-        return True
+        return not self._label_tuples or (start_label, end_label) in self._label_tuples

@@ -61,8 +61,8 @@ class MySQLStalenessRemovalTask(Task):
 
     def init(self, conf: ConfigTree) -> None:
         conf = Scoped.get_scoped_conf(conf, self.get_scope()) \
-            .with_fallback(conf) \
-            .with_fallback(MySQLStalenessRemovalTask._DEFAULT_CONFIG)
+                .with_fallback(conf) \
+                .with_fallback(MySQLStalenessRemovalTask._DEFAULT_CONFIG)
         self.target_tables = set(conf.get_list(MySQLStalenessRemovalTask.TARGET_TABLES))
         self.target_table_model_dict = self._get_target_table_model_dict(self.target_tables)
         self.dry_run = conf.get_bool(MySQLStalenessRemovalTask.DRY_RUN)
@@ -82,8 +82,11 @@ class MySQLStalenessRemovalTask(Task):
         else:
             self.marker = conf.get_string(MySQLStalenessRemovalTask.PUBLISHED_TAG)
 
-        connect_args = {k: v for k, v in conf.get_config(MySQLStalenessRemovalTask.CONNECT_ARGS,
-                                                         default=ConfigTree()).items()}
+        connect_args = dict(
+            conf.get_config(
+                MySQLStalenessRemovalTask.CONNECT_ARGS, default=ConfigTree()
+            ).items()
+        )
         self._engine = create_engine(conf.get_string(MySQLStalenessRemovalTask.CONN_STRING),
                                      echo=conf.get_bool(MySQLStalenessRemovalTask.ENGINE_ECHO),
                                      connect_args=connect_args)
@@ -96,10 +99,12 @@ class MySQLStalenessRemovalTask(Task):
         :param target_tables:
         :return:
         """
-        target_table_model_dict: Dict[str, Type[RDSModel]] = {}
-        for model in Base._decl_class_registry.values():
-            if hasattr(model, '__tablename__') and model.__tablename__ in target_tables:
-                target_table_model_dict[model.__tablename__] = model
+        target_table_model_dict: Dict[str, Type[RDSModel]] = {
+            model.__tablename__: model
+            for model in Base._decl_class_registry.values()
+            if hasattr(model, '__tablename__')
+            and model.__tablename__ in target_tables
+        }
         return target_table_model_dict
 
     def run(self) -> None:
@@ -117,16 +122,18 @@ class MySQLStalenessRemovalTask(Task):
             self.target_tables, key=lambda table: sorted_table_names.index(table), reverse=True)
         try:
             for table_name in sorted_target_tables:
-                target_model_class = self.target_table_model_dict.get(table_name, None)
-                if target_model_class:
-                    staleness_pct = self._validate_record_staleness_pct(target_model_class=target_model_class)
-                    if self.dry_run:
-                        LOGGER.info('Skipping deleting records since it is a Dry Run.')
-                        continue
-                    if staleness_pct > 0:
-                        self._delete_stale_records(target_model_class=target_model_class)
-                else:
+                if not (
+                    target_model_class := self.target_table_model_dict.get(
+                        table_name, None
+                    )
+                ):
                     raise Exception(f'Failed to get corresponding model for {table_name}')
+                staleness_pct = self._validate_record_staleness_pct(target_model_class=target_model_class)
+                if self.dry_run:
+                    LOGGER.info('Skipping deleting records since it is a Dry Run.')
+                    continue
+                if staleness_pct > 0:
+                    self._delete_stale_records(target_model_class=target_model_class)
         except Exception as e:
             self._session.rollback()
             raise e
@@ -175,10 +182,9 @@ class MySQLStalenessRemovalTask(Task):
         :param target_model_class:
         :return:
         """
-        if self.ms_to_expire:
-            current_time = int(time.time() * 1000)
-            filter_condition = target_model_class.publisher_last_updated_epoch_ms < (
-                current_time - self.marker)
-        else:
-            filter_condition = target_model_class.published_tag != self.marker
-        return filter_condition
+        if not self.ms_to_expire:
+            return target_model_class.published_tag != self.marker
+        current_time = int(time.time() * 1000)
+        return target_model_class.publisher_last_updated_epoch_ms < (
+            current_time - self.marker
+        )

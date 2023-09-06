@@ -19,7 +19,7 @@ class HttpFailureSkipOnStatus(BaseFailureHandler):
     def __init__(self,
                  status_codes_to_skip: Iterable[int],
                  ) -> None:
-        self._status_codes_to_skip = {v for v in status_codes_to_skip}
+        self._status_codes_to_skip = set(status_codes_to_skip)
 
     def can_skip_failure(self,
                          exception: Exception,

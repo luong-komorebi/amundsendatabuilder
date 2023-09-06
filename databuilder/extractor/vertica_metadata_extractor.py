@@ -62,12 +62,12 @@ class VerticaMetadataExtractor(Extractor):
 
     def init(self, conf: ConfigTree) -> None:
         conf = conf.with_fallback(VerticaMetadataExtractor.DEFAULT_CONFIG)
-        self._cluster = '{}'.format(conf.get_string(VerticaMetadataExtractor.CLUSTER_KEY))
+        self._cluster = f'{conf.get_string(VerticaMetadataExtractor.CLUSTER_KEY)}'
 
         if conf.get_bool(VerticaMetadataExtractor.USE_CATALOG_AS_CLUSTER_NAME):
             cluster_source = "c.table_catalog"
         else:
-            cluster_source = "'{}'".format(self._cluster)
+            cluster_source = f"'{self._cluster}'"
 
         self._database = conf.get_string(VerticaMetadataExtractor.DATABASE_KEY, default='vertica')
 
@@ -78,11 +78,11 @@ class VerticaMetadataExtractor(Extractor):
 
         self._alchemy_extractor = SQLAlchemyExtractor()
         sql_alch_conf = Scoped.get_scoped_conf(conf, self._alchemy_extractor.get_scope())\
-            .with_fallback(ConfigFactory.from_dict({SQLAlchemyExtractor.EXTRACT_SQL: self.sql_stmt}))
+                .with_fallback(ConfigFactory.from_dict({SQLAlchemyExtractor.EXTRACT_SQL: self.sql_stmt}))
 
         self.sql_stmt = sql_alch_conf.get_string(SQLAlchemyExtractor.EXTRACT_SQL)
 
-        LOGGER.info('SQL for vertica metadata: {}'.format(self.sql_stmt))
+        LOGGER.info(f'SQL for vertica metadata: {self.sql_stmt}')
 
         self._alchemy_extractor.init(sql_alch_conf)
         self._extract_iter: Union[None, Iterator] = None
@@ -108,9 +108,14 @@ class VerticaMetadataExtractor(Extractor):
 
             for row in group:
                 last_row = row
-                columns.append(ColumnMetadata(row['col_name'], None,
-                                              row['col_type'], row['col_sort_order']))
-
+                columns.append(
+                    ColumnMetadata(
+                        last_row['col_name'],
+                        None,
+                        last_row['col_type'],
+                        last_row['col_sort_order'],
+                    )
+                )
             yield TableMetadata(self._database, last_row['cluster'],
                                 last_row['schema'],
                                 last_row['name'],
@@ -123,10 +128,8 @@ class VerticaMetadataExtractor(Extractor):
         Provides iterator of result row from SQLAlchemy extractor
         :return:
         """
-        row = self._alchemy_extractor.extract()
-        while row:
+        while row := self._alchemy_extractor.extract():
             yield row
-            row = self._alchemy_extractor.extract()
 
     def _get_table_key(self, row: Dict[str, Any]) -> Union[TableKey, None]:
         """
@@ -134,7 +137,4 @@ class VerticaMetadataExtractor(Extractor):
         :param row:
         :return:
         """
-        if row:
-            return TableKey(schema=row['schema'], table_name=row['name'])
-
-        return None
+        return TableKey(schema=row['schema'], table_name=row['name']) if row else None

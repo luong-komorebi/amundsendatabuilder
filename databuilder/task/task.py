@@ -69,7 +69,7 @@ class DefaultTask(Task):
                         count += 1
 
                 if count > 0 and count % self._progress_report_frequency == 0:
-                    LOGGER.info(f'Extracted %i records so far', count)
+                    LOGGER.info('Extracted %i records so far', count)
 
                 # Prepare the next record
                 record = self.extractor.extract()

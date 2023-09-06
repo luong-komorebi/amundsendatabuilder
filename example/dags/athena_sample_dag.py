@@ -72,7 +72,7 @@ def connection_string():
     secret = AWS_SECRET
     host = 'athena.us-east-1.amazonaws.com'
     extras = 's3_staging_dir=s3://aws-athena-query-results-032106861074-us-east-1/'
-    return "awsathena+rest://%s:%s@%s:443/?%s" % (access_key, secret, host, extras)
+    return f"awsathena+rest://{access_key}:{secret}@{host}:443/?{extras}"
 
 
 def create_table_extract_job():
@@ -113,7 +113,7 @@ def create_es_publisher_sample_job():
     # elastic search client instance
     elasticsearch_client = es
     # unique name of new index in Elasticsearch
-    elasticsearch_new_index_key = 'tables' + str(uuid.uuid4())
+    elasticsearch_new_index_key = f'tables{str(uuid.uuid4())}'
     # related to mapping type from /databuilder/publisher/elasticsearch_publisher.py#L38
     elasticsearch_new_index_key_type = 'table'
     # alias for Elasticsearch used in amundsensearchlibrary/search_service/config.py as an index

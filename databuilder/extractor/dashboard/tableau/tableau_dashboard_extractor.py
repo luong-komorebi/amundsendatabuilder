@@ -41,24 +41,25 @@ class TableauGraphQLApiMetadataExtractor(TableauGraphQLApiExtractor):
                           self._conf.get_list(TableauGraphQLApiMetadataExtractor.EXCLUDED_PROJECTS, [])]
         base_url = self._conf.get(TableauGraphQLApiMetadataExtractor.TABLEAU_BASE_URL)
         site_name = self._conf.get_string(TableauGraphQLApiMetadataExtractor.SITE_NAME, '')
-        site_url_path = ''
-        if site_name != '':
-            site_url_path = f'/site/{site_name}'
+        site_url_path = f'/site/{site_name}' if site_name != '' else ''
         for workbook in workbooks_data:
             if None in (workbook['projectName'], workbook['name']):
                 LOGGER.warning(f'Ignoring workbook (ID:{workbook["vizportalUrlId"]}) ' +
                                f'in project (ID:{workbook["projectVizportalUrlId"]}) because of a lack of permission')
                 continue
-            data = {
+            yield {
                 'dashboard_group': workbook['projectName'],
-                'dashboard_name': TableauDashboardUtils.sanitize_workbook_name(workbook['name']),
+                'dashboard_name': TableauDashboardUtils.sanitize_workbook_name(
+                    workbook['name']
+                ),
                 'description': workbook.get('description', ''),
                 'created_timestamp': workbook['createdAt'],
                 'dashboard_group_url': f'{base_url}/#{site_url_path}/projects/{workbook["projectVizportalUrlId"]}',
                 'dashboard_url': f'{base_url}/#{site_url_path}/workbooks/{workbook["vizportalUrlId"]}/views',
-                'cluster': self._conf.get_string(TableauGraphQLApiMetadataExtractor.CLUSTER)
+                'cluster': self._conf.get_string(
+                    TableauGraphQLApiMetadataExtractor.CLUSTER
+                ),
             }
-            yield data
 
 
 class TableauDashboardExtractor(Extractor):
@@ -115,11 +116,10 @@ class TableauDashboardExtractor(Extractor):
         self._transformer = ChainedTransformer(transformers=transformers)
 
     def extract(self) -> Any:
-        record = self._extractor.extract()
-        if not record:
+        if record := self._extractor.extract():
+            return next(self._transformer.transform(record=record), None)
+        else:
             return None
-
-        return next(self._transformer.transform(record=record), None)
 
     def get_scope(self) -> str:
         return 'extractor.tableau_dashboard_metadata'

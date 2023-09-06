@@ -48,16 +48,15 @@ class BaseBigQueryExtractor(Extractor):
             credentials = (
                 google.oauth2.service_account.Credentials.from_service_account_file(
                     self.key_path, scopes=self._DEFAULT_SCOPES))
+        elif self.cred_key:
+            service_account_info = json.loads(self.cred_key)
+            credentials = (
+                google.oauth2.service_account.Credentials.from_service_account_info(
+                    service_account_info, scopes=self._DEFAULT_SCOPES))
         else:
-            if self.cred_key:
-                service_account_info = json.loads(self.cred_key)
-                credentials = (
-                    google.oauth2.service_account.Credentials.from_service_account_info(
-                        service_account_info, scopes=self._DEFAULT_SCOPES))
-            else:
-                # FIXME: mypy can't find this attribute
-                google_auth: Any = getattr(google, 'auth')
-                credentials, _ = google_auth.default(scopes=self._DEFAULT_SCOPES)
+            # FIXME: mypy can't find this attribute
+            google_auth: Any = getattr(google, 'auth')
+            credentials, _ = google_auth.default(scopes=self._DEFAULT_SCOPES)
 
         http = httplib2.Http()
         authed_http = google_auth_httplib2.AuthorizedHttp(credentials, http=http)
@@ -77,8 +76,7 @@ class BaseBigQueryExtractor(Extractor):
 
     def _iterate_over_tables(self) -> Any:
         for dataset in self._retrieve_datasets():
-            for entry in self._retrieve_tables(dataset):
-                yield entry
+            yield from self._retrieve_tables(dataset)
 
     # TRICKY: this function has different return types between different subclasses,
     # so type as Any. Should probably refactor to remove this unclear sharing.

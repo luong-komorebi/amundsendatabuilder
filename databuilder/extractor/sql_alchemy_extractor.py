@@ -32,8 +32,7 @@ class SQLAlchemyExtractor(Extractor):
 
         self.extract_sql = conf.get_string(SQLAlchemyExtractor.EXTRACT_SQL)
 
-        model_class = conf.get('model_class', None)
-        if model_class:
+        if model_class := conf.get('model_class', None):
             module_name, class_name = model_class.rsplit(".", 1)
             mod = importlib.import_module(module_name)
             self.model_class = getattr(mod, class_name)
@@ -47,15 +46,11 @@ class SQLAlchemyExtractor(Extractor):
         """
         Create a SQLAlchemy connection to Database
         """
-        connect_args = {
-            k: v
-            for k, v in self.conf.get_config(
-                self.CONNECT_ARGS, default=ConfigTree()
-            ).items()
-        }
+        connect_args = dict(
+            self.conf.get_config(self.CONNECT_ARGS, default=ConfigTree()).items()
+        )
         engine = create_engine(self.conn_string, connect_args=connect_args)
-        conn = engine.connect()
-        return conn
+        return engine.connect()
 
     def _execute_query(self) -> None:
         """

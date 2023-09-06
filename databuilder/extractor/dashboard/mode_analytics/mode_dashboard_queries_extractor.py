@@ -69,10 +69,7 @@ class ModeDashboardQueriesExtractor(Extractor):
 
     def extract(self) -> Any:
         record = self._extractor.extract()
-        if not record:
-            return None
-
-        return self._transformer.transform(record=record)
+        return None if not record else self._transformer.transform(record=record)
 
     def get_scope(self) -> str:
         return 'extractor.mode_dashboard_query'
@@ -98,7 +95,11 @@ class ModeDashboardQueriesExtractor(Extractor):
         queries_url_template = 'https://app.mode.com/api/{organization}/reports/{dashboard_id}/queries'
         json_path = '_embedded.queries[*].[token,name,raw_query]'
         field_names = ['query_id', 'query_name', 'query_text']
-        query_names_query = RestApiQuery(query_to_join=reports_query, url=queries_url_template, params=params,
-                                         json_path=json_path, field_names=field_names, skip_no_result=True)
-
-        return query_names_query
+        return RestApiQuery(
+            query_to_join=reports_query,
+            url=queries_url_template,
+            params=params,
+            json_path=json_path,
+            field_names=field_names,
+            skip_no_result=True,
+        )

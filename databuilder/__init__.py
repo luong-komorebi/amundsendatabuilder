@@ -69,7 +69,4 @@ class Scoped(object, metaclass=abc.ABCMeta):
         :param scope: scope string
         :return: Type safe config instance
         """
-        if not scope:
-            return Scoped._EMPTY_CONFIG
-
-        return conf.get(scope, Scoped._EMPTY_CONFIG)
+        return conf.get(scope, Scoped._EMPTY_CONFIG) if scope else Scoped._EMPTY_CONFIG
